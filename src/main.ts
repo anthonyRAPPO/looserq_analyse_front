@@ -28,7 +28,7 @@ const vuetify = createVuetify({
           primary: "#FDFFFC",
           secondary: "#FF9F1C",
           background: "#011627",
-          info: "#2EC4B6",
+          info: "#FF9F1C",
           error: "#E71D36",
         },
       },
