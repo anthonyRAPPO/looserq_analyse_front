@@ -6,4 +6,9 @@ export interface Game {
   allyTeam: number;
   win: boolean;
   lstParticipants: Participant[];
+  championPlayed: string;
+  uuidPlayer: string;
+  assists: number;
+  deaths: number;
+  kills: number;
 }

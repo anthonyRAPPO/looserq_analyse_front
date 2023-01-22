@@ -1,5 +1,14 @@
 <template>
   <div>DISPLAY GAMES</div>
+  <div>
+    <v-img
+      :lazy-src="getSrcImg()"
+      :src="getSrcImg()"
+      max-height="146"
+      max-width="250"
+      v-if="lstGames && lstGames.length > 0"
+    ></v-img>
+  </div>
 </template>
 
 <script lang="ts">
@@ -14,6 +23,7 @@ export default defineComponent({
       lstGames: [] as Game[],
     };
   },
+
   mounted() {
     this.login = this.$store.state.login;
     this.lstGames = this.$store.state.lstGames;
@@ -25,6 +35,11 @@ export default defineComponent({
       console.log("this.login");
       console.log(this.login);
     }
+  },
+  methods: {
+    getSrcImg() {
+      return `http://ddragon.leagueoflegends.com/cdn/13.1.1/img/champion/${this.lstGames[0].championPlayed}.png`;
+    },
   },
 });
 </script>

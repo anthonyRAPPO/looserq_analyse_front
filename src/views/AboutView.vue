@@ -33,7 +33,7 @@ export default defineComponent({
         let lstGame: Game[] = res.data;
         console.log("lstGame");
         console.log(lstGame);
-        /*participantService
+        participantService
           .getParticipantByGames(
             lstGame.filter((g) => g.id === "EUW1_6150189228"),
             Queue.RANKED_SOLO,
@@ -44,11 +44,11 @@ export default defineComponent({
             let lstParticipant: Participant[] = res.data;
             console.log("lstParticipant");
             console.log(lstParticipant);
-          });*/
-        let lstParticipant: Participant[] =
+          });
+        /*let lstParticipant: Participant[] =
           participantService.getParticipantByPass();
         console.log("lstParticipant");
-        console.log(lstParticipant);
+        console.log(lstParticipant);*/
       });
   },
 });

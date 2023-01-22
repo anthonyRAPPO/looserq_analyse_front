@@ -88,7 +88,7 @@ export default defineComponent({
             } else {
               this.$store.commit("SET_LOGIN", this.nameSelected);
               this.$store.commit("SET_GAMES", lstGame);
-              this.$router.push({ name: "DisplayGames" });
+              this.$router.push({ name: "AboutView" });
             }
           });
       }
