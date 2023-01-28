@@ -27,7 +27,7 @@ export default defineComponent({
     this.login = this.$store.state.login;
     this.lstGames = this.$store.state.lstGames;
     if (this.login.length === 0 || this.lstGames.length === 0) {
-      console.log("TODO");
+      this.$router.push({ name: "SearchLogin" });
     } else {
       console.log("this.lstGames");
       console.log(this.lstGames);

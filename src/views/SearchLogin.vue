@@ -6,6 +6,14 @@
         <h1>Welcome to LooserQAnalyse!</h1>
       </v-col>
       <v-col cols="12">
+        <v-img
+          id="logo"
+          :src="require('../assets/logoMonkey3.png')"
+          aspect-ratio="1"
+          alt="logo"
+        ></v-img>
+      </v-col>
+      <v-col cols="12">
         <h2>Analyse your last games to know if you are in looser Q</h2>
       </v-col>
     </v-row>
@@ -86,11 +94,14 @@ export default defineComponent({
             this.isLoading = false;
             let lstGame: Game[] = res.data;
             if (lstGame.length === 0) {
-              console.log("TODO");
+              eventBus.emit("ouvrir-popup", {
+                text: "No games found for this user ",
+                type: MessageType.INFO,
+              });
             } else {
               this.$store.commit("SET_LOGIN", this.nameSelected);
               this.$store.commit("SET_GAMES", lstGame);
-              this.$router.push({ name: "AboutView" });
+              this.$router.push({ name: "DisplayGames" });
             }
           })
           .catch((error) => {
@@ -142,5 +153,10 @@ export default defineComponent({
 <style scoped>
 .welwomeText {
   margin-top: 2em;
+}
+#logo {
+  margin-right: auto;
+  margin-left: auto;
+  width: 15em;
 }
 </style>
