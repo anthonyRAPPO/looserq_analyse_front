@@ -9,8 +9,7 @@ import { Platform } from "@/enumerations/platform";
 import { Queue } from "@/enumerations/queue";
 import { Game } from "@/interfaces/game";
 import { Participant } from "@/interfaces/participant";
-import * as gameService from "@/services/gameService";
-import * as participantService from "@/services/participantService";
+import * as apiService from "@/services/apiService";
 import * as utilService from "@/services/utilService";
 import { defineComponent } from "vue";
 
@@ -20,7 +19,7 @@ export default defineComponent({
     let dateDebut: Date = new Date();
     dateDebut.setDate(dateFin.getDate() - 200);
 
-    gameService
+    apiService
       .getHistoryByLoginQueueDateCountRegion(
         "Apony",
         Queue.RANKED_SOLO,
@@ -33,7 +32,7 @@ export default defineComponent({
         let lstGame: Game[] = res.data;
         console.log("lstGame");
         console.log(lstGame);
-        participantService
+        apiService
           .getParticipantByGames(
             lstGame.filter((g) => g.id === "EUW1_6150189228"),
             Queue.RANKED_SOLO,

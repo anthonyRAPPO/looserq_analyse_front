@@ -1,4 +1,4 @@
-import { Role } from "@/enumerations/Role";
+import { Role } from "../enumerations/Role";
 
 export interface Participant {
   puuid: string;

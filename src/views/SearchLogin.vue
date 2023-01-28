@@ -45,11 +45,13 @@
 <script lang="ts">
 import { Platform } from "@/enumerations/platform";
 import { defineComponent } from "vue";
-import * as gameService from "@/services/gameService";
+import * as apiService from "@/services/apiService";
 import * as utilService from "@/services/utilService";
 import { Queue } from "@/enumerations/queue";
 import { Game } from "@/interfaces/game";
 import Loading from "@/components/Loading.vue";
+import eventBus from "@/plugins/eventBus";
+import { MessageType } from "@/enumerations/messageType";
 
 export default defineComponent({
   name: "SearchLogin",
@@ -71,7 +73,7 @@ export default defineComponent({
         const dateFin: Date = new Date();
         let dateDebut: Date = new Date();
         dateDebut.setDate(dateFin.getDate() - 200);
-        gameService
+        apiService
           .getHistoryByLoginQueueDateCountRegion(
             this.nameSelected,
             Queue.RANKED_SOLO,
@@ -90,7 +92,41 @@ export default defineComponent({
               this.$store.commit("SET_GAMES", lstGame);
               this.$router.push({ name: "AboutView" });
             }
+          })
+          .catch((error) => {
+            console.log("2");
+            console.log(error);
+
+            this.isLoading = false;
+            if (error && error.response && error.response.status) {
+              switch (error.response.status) {
+                case 400: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Invalid parameters sent  ",
+                    type: MessageType.ERROR,
+                  });
+                  break;
+                }
+                case 404: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Can't find player for this login and region",
+                    type: MessageType.INFO,
+                  });
+                  break;
+                }
+              }
+            } else {
+              eventBus.emit("ouvrir-popup", {
+                text: "Error during request",
+                type: MessageType.ERROR,
+              });
+            }
           });
+      } else {
+        eventBus.emit("ouvrir-popup", {
+          text: "Name is incorrect",
+          type: MessageType.ERROR,
+        });
       }
     },
     isCorrectName() {

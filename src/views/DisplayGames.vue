@@ -16,7 +16,6 @@ import { Game } from "@/interfaces/game";
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "DisplayGames",
   data() {
     return {
       login: "",

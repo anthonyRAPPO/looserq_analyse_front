@@ -9,6 +9,7 @@ import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { aliases, mdi } from "vuetify/iconsets/mdi";
 import "@mdi/font/css/materialdesignicons.css";
+import mitt from "mitt";
 
 const vuetify = createVuetify({
   components,
@@ -30,6 +31,7 @@ const vuetify = createVuetify({
           background: "#011627",
           info: "#FF9F1C",
           error: "#E71D36",
+          warn: "#87F5FB",
         },
       },
     },
@@ -37,4 +39,6 @@ const vuetify = createVuetify({
 });
 
 const app = createApp(App);
+const eventBus = mitt();
+app.provide("eventBus", eventBus);
 app.use(store).use(router).use(vuetify).mount("#app");
