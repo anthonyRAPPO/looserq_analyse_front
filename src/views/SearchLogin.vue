@@ -125,6 +125,20 @@ export default defineComponent({
                   });
                   break;
                 }
+                case 429: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Too much request sent to RIOT API, please try later",
+                    type: MessageType.INFO,
+                  });
+                  break;
+                }
+                case 500: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Error requesting RIOT API",
+                    type: MessageType.INFO,
+                  });
+                  break;
+                }
               }
             } else {
               eventBus.emit("ouvrir-popup", {

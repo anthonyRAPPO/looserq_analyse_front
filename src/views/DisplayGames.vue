@@ -1,21 +1,23 @@
 <template>
   <div>DISPLAY GAMES</div>
-  <div>
-    <v-img
-      :lazy-src="getSrcImg()"
-      :src="getSrcImg()"
-      max-height="146"
-      max-width="250"
-      v-if="lstGames && lstGames.length > 0"
-    ></v-img>
+  <div v-if="lstGames.length > 0">
+    <game-box
+      :game="game"
+      v-for="game in lstGames"
+      v-bind:key="game.id"
+    ></game-box>
   </div>
 </template>
 
 <script lang="ts">
 import { Game } from "@/interfaces/game";
 import { defineComponent } from "vue";
+import GameBox from "@/components/GameBox.vue";
 
 export default defineComponent({
+  components: {
+    GameBox,
+  },
   data() {
     return {
       login: "",
@@ -34,11 +36,6 @@ export default defineComponent({
       console.log("this.login");
       console.log(this.login);
     }
-  },
-  methods: {
-    getSrcImg() {
-      return `http://ddragon.leagueoflegends.com/cdn/13.1.1/img/champion/${this.lstGames[0].championPlayed}.png`;
-    },
   },
 });
 </script>
