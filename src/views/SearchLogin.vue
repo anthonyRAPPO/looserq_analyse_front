@@ -44,7 +44,7 @@
         @click="searchGamesByLoginAndRegion()"
         :disabled="desableSearch()"
       >
-        Analyse
+        Search
       </v-btn>
     </v-row>
   </div>

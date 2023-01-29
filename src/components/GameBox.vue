@@ -28,8 +28,8 @@
           </span>
         </div>
       </v-col>
-      <v-col cols="7">
-        <v-row v-for="role in lstRole" v-bind:key="role" class="rowParticipant">
+      <v-col cols="6">
+        <v-row v-for="role in lstRole" :key="role" class="rowParticipant">
           <v-col cols="5" class="colParticipant participantWin">
             <span class="participantName">{{
               getParticipantByRoleAndWin(role, true)?.summonerName
@@ -64,6 +64,19 @@
           >
         </v-row>
       </v-col>
+      <v-col cols="1">
+        <div class="containerCheckBox">
+          <div class="center">
+            <v-checkbox
+              :disabled="isDesabled"
+              color="background"
+              v-model="selected"
+              hide-details
+              @change="gameSelectionChange()"
+            ></v-checkbox>
+          </div>
+        </div>
+      </v-col>
     </v-row>
   </v-card>
 </template>
@@ -82,15 +95,20 @@ export default defineComponent({
   name: "GameBox",
   props: {
     game: { required: true, type: Object as PropType<Game> },
+    analysed: { required: true, type: Boolean },
+    isSelected: { required: true, type: Boolean },
+    isDesabled: { required: true, type: Boolean },
   },
   data() {
     return {
       lstRole: [] as string[],
       error: false,
+      selected: false,
     };
   },
   mounted() {
     this.lstRole = Object.keys(Role);
+    this.selected = this.isSelected;
   },
   methods: {
     getSrcImgByGame(): string {
@@ -109,6 +127,13 @@ export default defineComponent({
     },
     getClassOfCard() {
       return this.game.win ? "cardGame winCard" : "cardGame looseCard";
+    },
+    gameSelectionChange() {
+      console.log("emit");
+      this.$emit("changeSelectionGame", {
+        selected: this.selected,
+        game: this.game,
+      });
     },
     getParticipantByRoleAndWin(role: string, win: boolean) {
       const lstRes: Participant[] = this.game.lstParticipants.filter(
@@ -182,6 +207,11 @@ export default defineComponent({
 
 .containerCenter {
   height: 6em;
+  position: relative;
+}
+
+.containerCheckBox {
+  height: 100%;
   position: relative;
 }
 
