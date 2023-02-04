@@ -9,4 +9,5 @@ export interface Participant {
   championPlayed: string;
   summonerName: string;
   teamPosition: Role;
+  isAlly: boolean;
 }

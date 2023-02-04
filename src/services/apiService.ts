@@ -42,6 +42,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Aatrox",
       summonerName: "yatsuhurakun",
       teamPosition: Role.TOP,
+      isAlly: true,
     },
     {
       puuid:
@@ -53,6 +54,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Zed",
       summonerName: "yatsuhura",
       teamPosition: Role.JUNGLE,
+      isAlly: true,
     },
     {
       puuid:
@@ -64,6 +66,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Veigar",
       summonerName: "TrollerRightHere",
       teamPosition: Role.MIDDLE,
+      isAlly: true,
     },
     {
       puuid:
@@ -75,6 +78,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Caitlyn",
       summonerName: "CharizardSOCHEAT",
       teamPosition: Role.BOTTOM,
+      isAlly: true,
     },
     {
       puuid:
@@ -86,6 +90,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Lux",
       summonerName: "Apony",
       teamPosition: Role.UTILITY,
+      isAlly: true,
     },
     {
       puuid:
@@ -97,6 +102,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Warwick",
       summonerName: "Bilibis",
       teamPosition: Role.TOP,
+      isAlly: false,
     },
     {
       puuid:
@@ -108,6 +114,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Nidalee",
       summonerName: "R0UNDABOUT",
       teamPosition: Role.JUNGLE,
+      isAlly: false,
     },
     {
       puuid:
@@ -119,6 +126,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Yone",
       summonerName: "Ropebutcher",
       teamPosition: Role.MIDDLE,
+      isAlly: false,
     },
     {
       puuid:
@@ -130,6 +138,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Kaisa",
       summonerName: "Y4CIN",
       teamPosition: Role.BOTTOM,
+      isAlly: false,
     },
     {
       puuid:
@@ -141,6 +150,7 @@ export function getParticipantByPass(): Participant[] {
       championPlayed: "Amumu",
       summonerName: "Rowya Zarys",
       teamPosition: Role.UTILITY,
+      isAlly: false,
     },
   ];
 }
