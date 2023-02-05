@@ -2,7 +2,6 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import SearchLoginView from "../views/SearchLogin.vue";
 import DisplayGamesView from "../views/DisplayGames.vue";
 import DisplayStatsView from "../views/DisplayStats.vue";
-import AboutView from "../views/AboutView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -19,11 +18,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/",
     name: "DisplayStats",
     component: DisplayStatsView,
-  },
-  {
-    path: "/",
-    name: "AboutView",
-    component: AboutView,
   },
 ];
 

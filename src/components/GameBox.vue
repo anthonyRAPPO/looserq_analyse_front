@@ -109,10 +109,16 @@ export default defineComponent({
   mounted() {
     this.lstRole = Object.keys(Role);
     this.selected = this.isSelected;
+    eventBus.on("unselect_game", (event) => this.unselectGame(event));
   },
   methods: {
     getSrcImgByGame(): string {
       return utilService.getSrcImgByGame(this.game);
+    },
+    unselectGame(event: any) {
+      if (event && event.id && this.game.id === event.id) {
+        this.selected = false;
+      }
     },
     getSrcImgByName(champ: string | undefined) {
       if (champ) {

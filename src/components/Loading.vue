@@ -19,12 +19,14 @@ export default defineComponent({
 
 <style scoped>
 #loading {
-  position: absolute;
-  z-index: 1000;
-  background-color: white;
-  opacity: 0.4;
-  height: 100vh;
-  width: 100vw;
+  position: fixed;
+  z-index: 100;
+  background-color: rgba(255, 255, 255);
+  opacity: 0.35;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
   text-align: center;
   line-height: 100vh;
 }

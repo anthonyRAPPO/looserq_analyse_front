@@ -1,6 +1,6 @@
 <template>
   <Loading v-if="isLoading"></Loading>
-  <h2 class="textSelection">Select the game(s) you want to analyse</h2>
+  <h2 class="textSelection">Select the game you want to analyse</h2>
   <v-btn
     class="btnBackLogin"
     icon
@@ -19,14 +19,14 @@
     color="secondary"
     variant="outlined"
     @click="launchGameAnalyse()"
-    :disabled="lstGamesSelected.length == 0"
+    :disabled="!gameSelected || !gameSelected.id"
   >
     Start the Analyse
   </v-btn>
   <div v-if="lstGames.length > 0">
     <game-box
       :game="game"
-      :is-selected="true"
+      :is-selected="false"
       :analysed="false"
       :isDesabled="isLoading"
       v-for="game in lstGames"
@@ -58,7 +58,7 @@ export default defineComponent({
     return {
       login: "",
       lstGames: [] as Game[],
-      lstGamesSelected: [] as Game[],
+      gameSelected: {} as Game | undefined,
       isLoading: false,
     };
   },
@@ -66,90 +66,93 @@ export default defineComponent({
   mounted() {
     this.login = this.$store.state.login;
     this.lstGames = this.$store.state.lstGames;
-    this.lstGamesSelected = this.$store.state.lstGames;
     if (this.login.length === 0 || this.lstGames.length === 0) {
       this.$router.push({ name: "SearchLogin" });
     }
   },
   methods: {
     gameSelectionChange(event: GameBoxSelectEvent) {
-      console.log(event);
-      const isInList: boolean = this.isgameInSelectedList(event.game);
-      if (event.selected && !isInList) {
-        this.lstGamesSelected.push(event.game);
-      } else if (!event.selected && isInList) {
-        this.lstGamesSelected = this.lstGamesSelected.filter(
-          (g) => g.id !== event.game.id
-        );
+      if (this.gameSelected && this.gameSelected.id) {
+        //une game est déja selectionnée
+        if (this.gameSelected.id === event.game.id) {
+          this.gameSelected = undefined;
+        } else {
+          eventBus.emit("unselect_game", {
+            id: this.gameSelected.id,
+          });
+          this.gameSelected = event.game;
+        }
+      } else {
+        //aucune game n'est selectionnée
+        this.gameSelected = event.game;
       }
-      console.log("this.lstGamesSelected");
-      console.log(this.lstGamesSelected);
+      console.log("this.gameSelected");
+      console.log(this.gameSelected);
     },
     launchGameAnalyse() {
-      this.isLoading = true;
-      /*apiService
-        .getParticipantByGames(
-          this.lstGamesSelected,
-          Queue.RANKED_SOLO,
-          Platform.EUW,
-          10
-        )
-        .then((res) => {
-          let lstParticipant: Participant[] = res.data;
-          console.log("lstParticipant");
-          console.log(lstParticipant);
-          this.isLoading = false;
-        })
-        .catch((error) => {
-          console.log("2");
-          console.log(error);
+      if (this.gameSelected && this.gameSelected.id) {
+        this.isLoading = true;
+        apiService
+          .getParticipantByGame(
+            this.gameSelected,
+            Queue.RANKED_SOLO,
+            Platform.EUW,
+            10
+          )
+          .then((res) => {
+            let lstParticipant: Participant[] = res.data;
+            console.log("lstParticipant");
+            console.log(lstParticipant);
+            this.isLoading = false;
+            this.$store.commit("SET_PARTICIPANT", lstParticipant);
+            this.$router.push({ name: "DisplayStats" });
+          })
+          .catch((error) => {
+            console.log("2");
+            console.log(error);
 
-          this.isLoading = false;
-          if (error && error.response && error.response.status) {
-            switch (error.response.status) {
-              case 400: {
-                eventBus.emit("ouvrir-popup", {
-                  text: "Invalid parameters sent  ",
-                  type: MessageType.ERROR,
-                });
-                break;
+            this.isLoading = false;
+            if (error && error.response && error.response.status) {
+              switch (error.response.status) {
+                case 400: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Invalid parameters sent  ",
+                    type: MessageType.ERROR,
+                  });
+                  break;
+                }
+                case 429: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Too much request sent to RIOT API, please try later",
+                    type: MessageType.INFO,
+                  });
+                  break;
+                }
+                case 500: {
+                  eventBus.emit("ouvrir-popup", {
+                    text: "Error requesting RIOT API",
+                    type: MessageType.INFO,
+                  });
+                  break;
+                }
               }
-              case 429: {
-                eventBus.emit("ouvrir-popup", {
-                  text: "Too much request sent to RIOT API, please try later",
-                  type: MessageType.INFO,
-                });
-                break;
-              }
-              case 500: {
-                eventBus.emit("ouvrir-popup", {
-                  text: "Error requesting RIOT API",
-                  type: MessageType.INFO,
-                });
-                break;
-              }
+            } else {
+              eventBus.emit("ouvrir-popup", {
+                text: "Error during request",
+                type: MessageType.ERROR,
+              });
             }
-          } else {
-            eventBus.emit("ouvrir-popup", {
-              text: "Error during request",
-              type: MessageType.ERROR,
-            });
-          }
-        });*/
-      let lstParticipant: Participant[] = apiService.getParticipantByPass();
+          });
+        /*let lstParticipant: Participant[] = apiService.getParticipantByPass();
       console.log("lstParticipant");
       console.log(lstParticipant);
       this.isLoading = false;
       this.$store.commit("SET_PARTICIPANT", lstParticipant);
-      this.$router.push({ name: "DisplayStats" });
+      this.$router.push({ name: "DisplayStats" });*/
+      }
     },
     returnLogin() {
       this.$router.push({ name: "SearchLogin" });
-    },
-    isgameInSelectedList(gameToCheck: Game): boolean {
-      return (
-        this.lstGamesSelected.filter((g) => g.id === gameToCheck.id).length > 0
-      );
     },
   },
 });
