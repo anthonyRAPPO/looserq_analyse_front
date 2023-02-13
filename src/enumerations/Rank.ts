@@ -4,4 +4,5 @@ export enum Rank {
   III = "III",
   IV = "IV",
   V = "V",
+  EMPTY = "EMPTY",
 }

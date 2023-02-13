@@ -32,7 +32,9 @@
         <v-row v-for="role in lstRole" :key="role" class="rowParticipant">
           <v-col cols="5" class="colParticipant participantWin">
             <span class="participantName">{{
-              getParticipantByRoleAndWin(role, true)?.summonerName
+              setLenghtName(
+                getParticipantByRoleAndWin(role, true)?.summonerName
+              )
             }}</span></v-col
           >
           <v-col cols="1" class="colParticipant">
@@ -59,7 +61,9 @@
           ></v-col>
           <v-col cols="5" class="colParticipant participantLoose"
             ><span class="participantName">{{
-              getParticipantByRoleAndWin(role, false)?.summonerName
+              setLenghtName(
+                getParticipantByRoleAndWin(role, false)?.summonerName
+              )
             }}</span></v-col
           >
         </v-row>
@@ -123,6 +127,13 @@ export default defineComponent({
     getSrcImgByName(champ: string | undefined) {
       if (champ) {
         return utilService.getSrcImgByName(champ);
+      }
+    },
+    setLenghtName(name: string | undefined): string | undefined {
+      if (name && name.length > 11) {
+        return name.substring(0, 11).concat("...");
+      } else {
+        return name;
       }
     },
     getStringDateFromNumber(): string {

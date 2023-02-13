@@ -13,13 +13,14 @@ module.exports = {
     plugins: ["@typescript-eslint", "prettier"],
     rules: {
         "prettier/prettier": "error",
+        
         // not needed for vue 3
         "vue/no-multiple-template-root": "off",
         "vue/multi-word-component-names": "off",
         "prettier/prettier": [
             "error",
             {
-              "endOfLine": "auto"
+              "endOfLine": "auto",
             }
           ]
     },
