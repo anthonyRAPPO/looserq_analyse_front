@@ -14,7 +14,7 @@
   <v-tabs v-model="tab" class="tabStat">
     <v-tab value="one">Last games</v-tab>
     <v-tab value="two">Rank</v-tab>
-    <v-tab value="three">Item Three</v-tab>
+    <v-tab value="three">kda</v-tab>
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
@@ -51,6 +51,27 @@
           rankbarChartData.datasets.length > 0
         "
       ></HorizontalBarChart>
+      <RadarChart
+        :radarChartData="rankRadarChartData"
+        :radarCharOption="rankRadarChartOption"
+        v-if="
+          rankRadarChartData &&
+          rankRadarChartData.datasets &&
+          rankRadarChartData.datasets.length > 0
+        "
+      ></RadarChart>
+    </v-window-item>
+    <v-window-item value="three">
+      <h3 class="sub-tittle">Kda of each player in the game selected:</h3>
+      <RadarChart
+        :radarChartData="kdaRadarChartData"
+        :radarCharOption="kdaRadarChartOption"
+        v-if="
+          kdaRadarChartData &&
+          kdaRadarChartData.datasets &&
+          kdaRadarChartData.datasets.length > 0
+        "
+      ></RadarChart>
     </v-window-item>
   </v-window>
 </template>
@@ -98,6 +119,10 @@ export default defineComponent({
       rankbarCharOption: {} as ChartOptions<"bar">,
       radarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
       radarChartOption: {} as ChartOptions<"radar">,
+      rankRadarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
+      rankRadarChartOption: {} as ChartOptions<"radar">,
+      kdaRadarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
+      kdaRadarChartOption: {} as ChartOptions<"radar">,
     };
   },
 
@@ -126,6 +151,8 @@ export default defineComponent({
         this.calculateWinrateByPositionByTeam(false);
       this.createGraphRadar(winRateAllyByPostion, winRateEnemyByPostion);
       this.createRankBarChart();
+      this.createGraphRadarRank();
+      this.createGraphRadarKda();
     }
   },
 
@@ -231,7 +258,166 @@ export default defineComponent({
       }
       return [winrateTop, winrateJungle, winrateMid, winrateAdc, winrateSupp];
     },
-    //createGraphRadarRank() {},
+    createGraphRadarKda() {
+      this.kdaRadarChartOption = {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          r: {
+            ticks: {
+              count: 0,
+            },
+          },
+        },
+      };
+      this.kdaRadarChartData = {
+        labels: Object.keys(Role),
+        datasets: [
+          {
+            label: "ally",
+            fill: true,
+            borderColor: this.$vuetify.theme.themes.light.colors.warn,
+            data: [
+              this.getKdaByRoleAlly(Role.TOP, true),
+              this.getKdaByRoleAlly(Role.JUNGLE, true),
+              this.getKdaByRoleAlly(Role.MIDDLE, true),
+              this.getKdaByRoleAlly(Role.BOTTOM, true),
+              this.getKdaByRoleAlly(Role.UTILITY, true),
+            ],
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: this.$vuetify.theme.themes.light.colors.warn,
+          },
+          {
+            label: "enemy",
+            borderColor: this.$vuetify.theme.themes.light.colors.error,
+            fill: true,
+            data: [
+              this.getKdaByRoleAlly(Role.TOP, false),
+              this.getKdaByRoleAlly(Role.JUNGLE, false),
+              this.getKdaByRoleAlly(Role.MIDDLE, false),
+              this.getKdaByRoleAlly(Role.BOTTOM, false),
+              this.getKdaByRoleAlly(Role.UTILITY, false),
+            ],
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor:
+              this.$vuetify.theme.themes.light.colors.error,
+          },
+        ],
+      };
+    },
+    createGraphRadarRank() {
+      this.rankRadarChartOption = {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              footer: function (context) {
+                return context[0].dataset.label;
+              },
+              label: function (context) {
+                const elo = context.dataset.data[context.dataIndex];
+                if (typeof elo === "number" && elo > 0) {
+                  const quo: number = Math.floor(elo / 400);
+                  const rest: number = elo % 400;
+                  let lp = 0;
+                  let tier: Tier = Tier.IRON;
+                  let rank: Rank = Rank.I;
+                  if (quo === 1) {
+                    tier = Tier.BRONZE;
+                  } else if (quo === 2) {
+                    tier = Tier.SILVER;
+                  } else if (quo === 3) {
+                    tier = Tier.GOLD;
+                  } else if (quo === 4) {
+                    tier = Tier.PLATINUM;
+                  } else if (quo === 5) {
+                    tier = Tier.DIAMOND;
+                  } else if (quo >= 6) {
+                    tier = Tier.MASTER;
+                  }
+                  if (tier !== Tier.MASTER) {
+                    const quo2: number = Math.floor(rest / 100);
+                    lp = rest % 100;
+                    if (quo2 === 0) {
+                      rank = Rank.IV;
+                    } else if (quo2 === 1) {
+                      rank = Rank.III;
+                    } else if (quo2 === 2) {
+                      rank = Rank.II;
+                    } else if (quo2 >= 3) {
+                      rank = Rank.I;
+                    }
+                  } else {
+                    lp = rest;
+                  }
+                  if (tier === Tier.MASTER) {
+                    return `${tier} + ${lp + (quo - 6) * 400}lp`;
+                  } else {
+                    return `${tier} ${rank}    ${lp}lp`;
+                  }
+                } else {
+                  return "";
+                }
+              },
+            },
+          },
+        },
+        scales: {
+          r: {
+            ticks: {
+              count: 0,
+            },
+          },
+        },
+      };
+      this.rankRadarChartData = {
+        labels: Object.keys(Role),
+        datasets: [
+          {
+            label: "ally",
+            fill: true,
+            borderColor: this.$vuetify.theme.themes.light.colors.warn,
+            data: [
+              this.getEloByRoleAlly(Role.TOP, true),
+              this.getEloByRoleAlly(Role.JUNGLE, true),
+              this.getEloByRoleAlly(Role.MIDDLE, true),
+              this.getEloByRoleAlly(Role.BOTTOM, true),
+              this.getEloByRoleAlly(Role.UTILITY, true),
+            ],
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: this.$vuetify.theme.themes.light.colors.warn,
+          },
+          {
+            label: "enemy",
+            borderColor: this.$vuetify.theme.themes.light.colors.error,
+            fill: true,
+            data: [
+              this.getEloByRoleAlly(Role.TOP, false),
+              this.getEloByRoleAlly(Role.JUNGLE, false),
+              this.getEloByRoleAlly(Role.MIDDLE, false),
+              this.getEloByRoleAlly(Role.BOTTOM, false),
+              this.getEloByRoleAlly(Role.UTILITY, false),
+            ],
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor:
+              this.$vuetify.theme.themes.light.colors.error,
+          },
+        ],
+      };
+      console.log("this.rankRadarChartData");
+      console.log(this.rankRadarChartData);
+    },
     createGraphRadar(
       winRateAllyByPostion: number[],
       winRateEnemyByPostion: number[]
@@ -287,10 +473,18 @@ export default defineComponent({
         return "undefined";
       }
     },
+    getKdaByRoleAlly(role: string, ally: boolean): number {
+      const p = this.getParticipantByRoleAndAlly(role, ally);
+      if (p) {
+        return (p.kill + p.assist) / p.death;
+      } else {
+        return 0;
+      }
+    },
     getEloByRoleAlly(role: string, ally: boolean): number {
       const p = this.getParticipantByRoleAndAlly(role, ally);
       if (p) {
-        if (p.calculatedElo === -1) {
+        if (p.calculatedElo === 0) {
           eventBus.emit("ouvrir-popup", {
             text: `The ${
               ally ? "ally" : "ennemy"
@@ -402,7 +596,7 @@ export default defineComponent({
                     lp = rest;
                   }
                   if (tier === Tier.MASTER) {
-                    return `${tier} + ${lp}lp`;
+                    return `${tier} + ${lp + (quo - 6) * 400}lp`;
                   } else {
                     return `${tier} ${rank}    ${lp}lp`;
                   }
@@ -461,8 +655,6 @@ export default defineComponent({
     createGraphBar(winRateAlly: number, winRateEnemy: number) {
       this.barCharOption = {
         indexAxis: "y",
-        // Elements options apply to all of the options unless overridden in a dataset
-        // In this case, we are setting the border of each horizontal bar to be 2px wide
         elements: {
           bar: {
             borderWidth: 2,

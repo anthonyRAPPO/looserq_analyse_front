@@ -19,4 +19,7 @@ export interface Participant {
   totalWinSeason: number;
   totalLooseSeason: number;
   calculatedElo: number;
+  kill: number;
+  death: number;
+  assist: number;
 }

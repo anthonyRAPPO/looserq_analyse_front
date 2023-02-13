@@ -11,7 +11,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import type { PropType } from "vue";
-import { Bar, Radar } from "vue-chartjs";
+import { Radar } from "vue-chartjs";
 import {
   Chart as ChartJS,
   Tooltip,
