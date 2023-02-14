@@ -265,6 +265,15 @@ export default defineComponent({
           legend: {
             display: false,
           },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return (
+                  Math.exp(context.dataset.data[context.dataIndex]!) - 1
+                ).toFixed(2);
+              },
+            },
+          },
         },
         scales: {
           r: {
@@ -281,13 +290,7 @@ export default defineComponent({
             label: "ally",
             fill: true,
             borderColor: this.$vuetify.theme.themes.light.colors.warn,
-            data: [
-              this.getKdaByRoleAlly(Role.TOP, true),
-              this.getKdaByRoleAlly(Role.JUNGLE, true),
-              this.getKdaByRoleAlly(Role.MIDDLE, true),
-              this.getKdaByRoleAlly(Role.BOTTOM, true),
-              this.getKdaByRoleAlly(Role.UTILITY, true),
-            ],
+            data: this.getkdaListByAlly(true),
             pointBorderColor: "#fff",
             pointHoverBackgroundColor: "#fff",
             pointHoverBorderColor: this.$vuetify.theme.themes.light.colors.warn,
@@ -296,13 +299,7 @@ export default defineComponent({
             label: "enemy",
             borderColor: this.$vuetify.theme.themes.light.colors.error,
             fill: true,
-            data: [
-              this.getKdaByRoleAlly(Role.TOP, false),
-              this.getKdaByRoleAlly(Role.JUNGLE, false),
-              this.getKdaByRoleAlly(Role.MIDDLE, false),
-              this.getKdaByRoleAlly(Role.BOTTOM, false),
-              this.getKdaByRoleAlly(Role.UTILITY, false),
-            ],
+            data: this.getkdaListByAlly(false),
             pointBorderColor: "#fff",
             pointHoverBackgroundColor: "#fff",
             pointHoverBorderColor:
@@ -386,13 +383,7 @@ export default defineComponent({
             label: "ally",
             fill: true,
             borderColor: this.$vuetify.theme.themes.light.colors.warn,
-            data: [
-              this.getEloByRoleAlly(Role.TOP, true),
-              this.getEloByRoleAlly(Role.JUNGLE, true),
-              this.getEloByRoleAlly(Role.MIDDLE, true),
-              this.getEloByRoleAlly(Role.BOTTOM, true),
-              this.getEloByRoleAlly(Role.UTILITY, true),
-            ],
+            data: this.getEloListByAlly(true),
             pointBorderColor: "#fff",
             pointHoverBackgroundColor: "#fff",
             pointHoverBorderColor: this.$vuetify.theme.themes.light.colors.warn,
@@ -401,13 +392,7 @@ export default defineComponent({
             label: "enemy",
             borderColor: this.$vuetify.theme.themes.light.colors.error,
             fill: true,
-            data: [
-              this.getEloByRoleAlly(Role.TOP, false),
-              this.getEloByRoleAlly(Role.JUNGLE, false),
-              this.getEloByRoleAlly(Role.MIDDLE, false),
-              this.getEloByRoleAlly(Role.BOTTOM, false),
-              this.getEloByRoleAlly(Role.UTILITY, false),
-            ],
+            data: this.getEloListByAlly(false),
             pointBorderColor: "#fff",
             pointHoverBackgroundColor: "#fff",
             pointHoverBorderColor:
@@ -417,6 +402,16 @@ export default defineComponent({
       };
       console.log("this.rankRadarChartData");
       console.log(this.rankRadarChartData);
+    },
+    getEloListByAlly(ally: boolean): number[] {
+      return this.lstParticipant
+        .filter((p) => p.ally === ally)
+        .map((p) => p.calculatedElo);
+    },
+    getkdaListByAlly(ally: boolean): number[] {
+      return this.lstParticipant
+        .filter((p) => p.ally === ally)
+        .map((p) => Math.log(+p.kda.toFixed(2) + 1));
     },
     createGraphRadar(
       winRateAllyByPostion: number[],
@@ -471,14 +466,6 @@ export default defineComponent({
         return `${lstRes[0].tier}${lstRes[0].rank}`;
       } else {
         return "undefined";
-      }
-    },
-    getKdaByRoleAlly(role: string, ally: boolean): number {
-      const p = this.getParticipantByRoleAndAlly(role, ally);
-      if (p) {
-        return (p.kill + p.assist) / p.death;
-      } else {
-        return 0;
       }
     },
     getEloByRoleAlly(role: string, ally: boolean): number {

@@ -22,4 +22,5 @@ export interface Participant {
   kill: number;
   death: number;
   assist: number;
+  kda: number;
 }

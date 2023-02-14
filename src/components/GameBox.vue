@@ -70,7 +70,7 @@
       </v-col>
       <v-col cols="1">
         <div class="containerCheckBox">
-          <div class="center">
+          <div class="centerCheckBox">
             <v-checkbox
               :disabled="isDesabled"
               color="background"
@@ -244,6 +244,15 @@ export default defineComponent({
   position: absolute;
   top: 50%;
   left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  width: 100%;
+}
+
+.centerCheckBox {
+  margin: 0;
+  position: absolute;
+  top: 50%;
   -ms-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   width: 100%;
