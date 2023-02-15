@@ -14,7 +14,8 @@
   <v-tabs v-model="tab" class="tabStat">
     <v-tab value="one">Last games</v-tab>
     <v-tab value="two">Rank</v-tab>
-    <v-tab value="three">kda</v-tab>
+    <v-tab value="three">Your game</v-tab>
+    <v-tab value="four">kda</v-tab>
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
@@ -62,25 +63,34 @@
       ></RadarChart>
     </v-window-item>
     <v-window-item value="three">
-      <h3 class="sub-tittle">Kda of each player in the game selected:</h3>
+      <v-select
+        label="Select the statistic you want to display"
+        :items="statAvailable"
+        v-model="statSelected"
+        class="selectStat"
+        @update:model-value="changeSelectedStat()"
+      ></v-select>
+
       <RadarChart
         :radarChartData="kdaRadarChartData"
         :radarCharOption="kdaRadarChartOption"
+        :key="kdaKey"
         v-if="
           kdaRadarChartData &&
           kdaRadarChartData.datasets &&
           kdaRadarChartData.datasets.length > 0
         "
       ></RadarChart>
+      <h2 :class="setResultClass()">
+        {{ lstGames[0].win ? "Victory" : "Loose" }}
+      </h2>
     </v-window-item>
   </v-window>
 </template>
 
 <script lang="ts">
 import { Game } from "@/interfaces/game";
-import { GameBoxSelectEvent } from "@/interfaces/gameBoxSelectEvent";
 import { defineComponent } from "vue";
-import * as apiService from "@/services/apiService";
 import { Participant } from "@/interfaces/participant";
 import Loading from "@/components/Loading.vue";
 import HorizontalBarChart from "@/components/HorizontalBarChart.vue";
@@ -91,6 +101,7 @@ import { Role } from "@/enumerations/Role";
 import { MessageType } from "@/enumerations/messageType";
 import { Tier } from "@/enumerations/Tier";
 import { Rank } from "@/enumerations/Rank";
+import { GameStatDisplay } from "@/enumerations/gameStatDisplay";
 
 export default defineComponent({
   components: {
@@ -100,6 +111,9 @@ export default defineComponent({
   },
   data() {
     return {
+      kdaKey: 0,
+      statSelected: GameStatDisplay.KDA,
+      statAvailable: Object.values(GameStatDisplay),
       tab: "one",
       isLoading: false,
       login: "",
@@ -157,6 +171,65 @@ export default defineComponent({
   },
 
   methods: {
+    changeSelectedStat() {
+      switch (this.statSelected) {
+        case GameStatDisplay.KDA:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.getkdaListByAlly(d.label === "ally");
+          });
+          break;
+        case GameStatDisplay.DMG_DEALT:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.lstParticipant
+              .filter((p) => p.ally === (d.label === "ally"))
+              .map((p) => Math.log(+p.dmgDealt.toFixed(2) + 1));
+          });
+          break;
+        case GameStatDisplay.DMG_TAKEN:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.lstParticipant
+              .filter((p) => p.ally === (d.label === "ally"))
+              .map((p) => Math.log(+p.dmgTaken.toFixed(2) + 1));
+          });
+          break;
+        case GameStatDisplay.GOLD:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.lstParticipant
+              .filter((p) => p.ally === (d.label === "ally"))
+              .map((p) => Math.log(+p.gold.toFixed(2) + 1));
+          });
+          break;
+        case GameStatDisplay.LONGEST_TIME_LIVING:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.lstParticipant
+              .filter((p) => p.ally === (d.label === "ally"))
+              .map((p) => Math.log(+p.longestTimeLiving.toFixed(2) + 1));
+          });
+          break;
+        case GameStatDisplay.TOTAL_CS:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.lstParticipant
+              .filter((p) => p.ally === (d.label === "ally"))
+              .map((p) => Math.log(+p.totalcs.toFixed(2) + 1));
+          });
+          break;
+        case GameStatDisplay.VISION_SCORE:
+          this.kdaRadarChartData.datasets.forEach((d) => {
+            d.data = this.lstParticipant
+              .filter((p) => p.ally === (d.label === "ally"))
+              .map((p) => Math.log(+p.visionScore.toFixed(2) + 1));
+          });
+          break;
+      }
+      this.kdaKey++;
+    },
+    setResultClass() {
+      if (this.lstGames[0].win) {
+        return "winTittle";
+      } else {
+        return "looseTittle";
+      }
+    },
     returnGames() {
       this.$router.push({ name: "DisplayGames" });
     },
@@ -268,9 +341,15 @@ export default defineComponent({
           tooltip: {
             callbacks: {
               label: function (context) {
-                return (
-                  Math.exp(context.dataset.data[context.dataIndex]!) - 1
-                ).toFixed(2);
+                const data = context.dataset.data[context.dataIndex];
+                if (data) {
+                  return (Math.exp(data) - 1).toFixed(2);
+                } else {
+                  return "";
+                }
+              },
+              footer: function (context) {
+                return context[0].dataset.label;
               },
             },
           },
@@ -370,6 +449,10 @@ export default defineComponent({
         },
         scales: {
           r: {
+            min:
+              this.lstParticipant.reduce((prev, curr) =>
+                prev.calculatedElo < curr.calculatedElo ? prev : curr
+              ).calculatedElo - 50,
             ticks: {
               count: 0,
             },
@@ -480,7 +563,7 @@ export default defineComponent({
           });
           return 0;
         } else {
-          return p.calculatedElo;
+          return Math.pow(p.calculatedElo / 100, 7);
         }
       } else {
         eventBus.emit("ouvrir-popup", {
@@ -547,8 +630,9 @@ export default defineComponent({
                 return context[0].dataset.label;
               },
               label: function (context) {
-                const elo = context.dataset.data[context.dataIndex];
+                let elo = context.dataset.data[context.dataIndex];
                 if (typeof elo === "number") {
+                  elo = Math.pow(elo, 1.0 / 7.0) * 100;
                   const quo: number = Math.floor(elo / 400);
                   const rest: number = elo % 400;
                   let lp = 0;
@@ -583,9 +667,9 @@ export default defineComponent({
                     lp = rest;
                   }
                   if (tier === Tier.MASTER) {
-                    return `${tier} + ${lp + (quo - 6) * 400}lp`;
+                    return `${tier} + ${(lp + (quo - 6) * 400).toFixed(0)}lp`;
                   } else {
-                    return `${tier} ${rank}    ${lp}lp`;
+                    return `${tier} ${rank}    ${lp.toFixed(0)}lp`;
                   }
                 }
               },
@@ -707,5 +791,27 @@ export default defineComponent({
   position: fixed;
   top: 2%;
   left: 2%;
+}
+
+.winTittle {
+  color: rgb(var(--v-theme-secondary));
+}
+
+.looseTittle {
+  color: rgb(var(--v-theme-error));
+}
+
+.sub-tittle-game {
+  width: 80%;
+  display: flex;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.selectStat {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1em;
+  width: 20%;
 }
 </style>

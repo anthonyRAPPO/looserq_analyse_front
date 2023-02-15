@@ -12,7 +12,9 @@
       text="We don't have the RIOT API production key yet, so requests can take a few minutes "
       :closable="true"
     ></v-alert>
-    <router-view class="routerView" />
+    <div class="routerView">
+      <router-view />
+    </div>
     <v-footer color="background" height="50" width="auto">
       <div class="footer">
         <span>2023 - LooserQAnalyse - looserq.analyse@gmail.com</span>
@@ -42,14 +44,13 @@ export default defineComponent({
 }
 </style>
 <style scoped>
+.routerView {
+  margin-bottom: 2em;
+}
 .footer {
   height: 1em;
   margin: auto;
   font-size: 0.85em;
-}
-
-.routerView {
-  margin-bottom: 2em;
 }
 
 .alert {

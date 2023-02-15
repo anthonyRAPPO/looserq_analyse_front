@@ -119,8 +119,8 @@ export default defineComponent({
     getSrcImgByGame(): string {
       return utilService.getSrcImgByGame(this.game);
     },
-    unselectGame(event: any) {
-      if (event && event.id && this.game.id === event.id) {
+    unselectGame(id: unknown) {
+      if (id && typeof id === "string" && this.game.id === id) {
         this.selected = false;
       }
     },

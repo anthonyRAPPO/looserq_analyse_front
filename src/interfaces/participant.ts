@@ -23,4 +23,10 @@ export interface Participant {
   death: number;
   assist: number;
   kda: number;
+  gold: number;
+  dmgDealt: number;
+  dmgTaken: number;
+  visionScore: number;
+  totalcs: number;
+  longestTimeLiving: number;
 }

@@ -77,9 +77,7 @@ export default defineComponent({
         if (this.gameSelected.id === event.game.id) {
           this.gameSelected = undefined;
         } else {
-          eventBus.emit("unselect_game", {
-            id: this.gameSelected.id,
-          });
+          eventBus.emit("unselect_game", this.gameSelected.id);
           this.gameSelected = event.game;
         }
       } else {
