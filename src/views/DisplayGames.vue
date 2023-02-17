@@ -84,8 +84,6 @@ export default defineComponent({
         //aucune game n'est selectionnée
         this.gameSelected = event.game;
       }
-      console.log("this.gameSelected");
-      console.log(this.gameSelected);
     },
     launchGameAnalyse() {
       if (this.gameSelected && this.gameSelected.id) {
@@ -100,7 +98,7 @@ export default defineComponent({
           .then((res) => {
             let lstParticipant: Participant[] = res.data;
             console.log("lstParticipant");
-            console.log(lstParticipant);
+            lstParticipant;
             this.isLoading = false;
             this.$store.commit("SET_PARTICIPANT", lstParticipant);
             this.$router.push({ name: "DisplayStats" });
@@ -142,8 +140,6 @@ export default defineComponent({
             }
           });*/
         let lstParticipant: Participant[] = apiService.getParticipantByPass();
-        console.log("lstParticipant");
-        console.log(lstParticipant);
         this.isLoading = false;
         this.$store.commit("SET_PARTICIPANT", lstParticipant);
         this.$router.push({ name: "DisplayStats" });

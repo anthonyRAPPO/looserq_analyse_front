@@ -105,9 +105,6 @@ export default defineComponent({
             }
           })
           .catch((error) => {
-            console.log("2");
-            console.log(error);
-
             this.isLoading = false;
             if (error && error.response && error.response.status) {
               switch (error.response.status) {

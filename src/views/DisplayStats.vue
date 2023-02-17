@@ -14,8 +14,9 @@
   <v-tabs v-model="tab" class="tabStat">
     <v-tab value="one">Last games</v-tab>
     <v-tab value="two">Rank</v-tab>
-    <v-tab value="three">Your game</v-tab>
-    <v-tab value="four">kda</v-tab>
+    <v-tab value="three">Season winrate</v-tab>
+    <v-tab value="four">Your game</v-tab>
+    <v-tab value="five">Overview</v-tab>
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
@@ -63,6 +64,29 @@
       ></RadarChart>
     </v-window-item>
     <v-window-item value="three">
+      <h3 class="sub-tittle">
+        Winrate (actual season) per team of each player :
+      </h3>
+      <HorizontalBarChart
+        :barCharData="winratebarChartData"
+        :barCharOption="winratebarCharOption"
+        v-if="
+          winratebarChartData &&
+          winratebarChartData.datasets &&
+          winratebarChartData.datasets.length > 0
+        "
+      ></HorizontalBarChart>
+      <RadarChart
+        :radarChartData="winrateRadarChartData"
+        :radarCharOption="winrateRadarChartOption"
+        v-if="
+          winrateRadarChartData &&
+          winrateRadarChartData.datasets &&
+          winrateRadarChartData.datasets.length > 0
+        "
+      ></RadarChart>
+    </v-window-item>
+    <v-window-item value="four">
       <v-select
         label="Select the statistic you want to display"
         :items="statAvailable"
@@ -85,22 +109,39 @@
         {{ lstGames[0].win ? "Victory" : "Loose" }}
       </h2>
     </v-window-item>
+    <v-window-item value="five">
+      <v-select
+        label="Select the lane you want to display"
+        :items="roleAvailable"
+        v-model="roleSelected"
+        class="selectStat"
+        @update:model-value="changeSelectedStat()"
+      ></v-select>
+      <OverViewCard
+        :allyOverView="getOverviewByRoleAndAlly(roleSelected, true)"
+        :enemyOverView="getOverviewByRoleAndAlly(roleSelected, false)"
+      ></OverViewCard>
+    </v-window-item>
   </v-window>
 </template>
 
 <script lang="ts">
 import { Game } from "@/interfaces/game";
+import { OverView } from "@/interfaces/overview";
 import { defineComponent } from "vue";
 import { Participant } from "@/interfaces/participant";
 import Loading from "@/components/Loading.vue";
 import HorizontalBarChart from "@/components/HorizontalBarChart.vue";
 import RadarChart from "@/components/RadarChart.vue";
+import OverViewCard from "@/components/OverViewCard.vue";
 import eventBus from "@/plugins/eventBus";
 import { ChartData, ChartOptions } from "chart.js";
 import { Role } from "@/enumerations/Role";
+import { RoleSelectable } from "@/enumerations/RoleSelectable";
 import { MessageType } from "@/enumerations/messageType";
 import { Tier } from "@/enumerations/Tier";
 import { Rank } from "@/enumerations/Rank";
+
 import { GameStatDisplay } from "@/enumerations/gameStatDisplay";
 
 export default defineComponent({
@@ -108,12 +149,15 @@ export default defineComponent({
     Loading,
     HorizontalBarChart,
     RadarChart,
+    OverViewCard,
   },
   data() {
     return {
       kdaKey: 0,
       statSelected: GameStatDisplay.KDA,
       statAvailable: Object.values(GameStatDisplay),
+      roleAvailable: Object.values({ ...Role, ...RoleSelectable }),
+      roleSelected: Role.TOP as Role | RoleSelectable,
       tab: "one",
       isLoading: false,
       login: "",
@@ -129,6 +173,12 @@ export default defineComponent({
         (number | [number, number] | null)[],
         unknown
       >,
+      winratebarChartData: {} as ChartData<
+        "bar",
+        (number | [number, number] | null)[],
+        unknown
+      >,
+      winratebarCharOption: {} as ChartOptions<"bar">,
       barCharOption: {} as ChartOptions<"bar">,
       rankbarCharOption: {} as ChartOptions<"bar">,
       radarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
@@ -137,6 +187,13 @@ export default defineComponent({
       rankRadarChartOption: {} as ChartOptions<"radar">,
       kdaRadarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
       kdaRadarChartOption: {} as ChartOptions<"radar">,
+      winrateRadarChartData: {} as ChartData<
+        "radar",
+        (number | null)[],
+        unknown
+      >,
+      winrateRadarChartOption: {} as ChartOptions<"radar">,
+      overviewLst: [] as OverView[],
     };
   },
 
@@ -145,8 +202,6 @@ export default defineComponent({
     this.lstGames = this.$store.state.lstGames;
     this.lstParticipant = this.$store.state.lstParticipant;
 
-    console.log(this.login);
-    console.log(this.lstGames);
     console.log(this.lstParticipant);
 
     if (
@@ -157,20 +212,136 @@ export default defineComponent({
     ) {
       this.$router.push({ name: "SearchLogin" });
     } else {
-      const winRateAlly = this.calculateWinrateByTeam(true);
-      const winRateEnemy = this.calculateWinrateByTeam(false);
-      this.createGraphBar(winRateAlly, winRateEnemy);
-      const winRateAllyByPostion = this.calculateWinrateByPositionByTeam(true);
-      const winRateEnemyByPostion =
-        this.calculateWinrateByPositionByTeam(false);
-      this.createGraphRadar(winRateAllyByPostion, winRateEnemyByPostion);
+      this.initOverview();
+      this.createGraphBar();
+      this.createGraphRadar();
       this.createRankBarChart();
       this.createGraphRadarRank();
+      this.createWinrateBarChart();
+      this.createWinrateGraphRadar();
       this.createGraphRadarKda();
+      this.fillOverViewTeamElo();
+
+      console.log("lstOverview =>");
+      console.log(this.overviewLst);
     }
   },
 
   methods: {
+    getOverviewByRoleAndAlly(
+      role: Role | RoleSelectable,
+      isAlly: boolean
+    ): OverView {
+      return this.overviewLst.filter(
+        (o) => o.isAlly === isAlly && o.role === role
+      )[0];
+    },
+
+    fillOverViewTeamElo() {
+      this.fillOverViewTeamEloByAlly(true);
+      this.fillOverViewTeamEloByAlly(false);
+    },
+    fillOverViewTeamEloByAlly(isAlly: boolean) {
+      const o = this.getOverViewByRoleAndAlly(RoleSelectable.ALL, isAlly);
+      let totalElo = 0;
+      this.lstParticipant
+        .filter((p) => p.ally === isAlly)
+        .forEach((p) => {
+          totalElo = totalElo + p.calculatedElo;
+        });
+
+      totalElo = totalElo / 5;
+      o.calculatedElo = totalElo;
+      const quo: number = Math.floor(totalElo / 400);
+      const rest: number = totalElo % 400;
+      let lp = 0;
+      let tier: Tier = Tier.IRON;
+      let rank: Rank = Rank.I;
+      if (quo === 1) {
+        tier = Tier.BRONZE;
+      } else if (quo === 2) {
+        tier = Tier.SILVER;
+      } else if (quo === 3) {
+        tier = Tier.GOLD;
+      } else if (quo === 4) {
+        tier = Tier.PLATINUM;
+      } else if (quo === 5) {
+        tier = Tier.DIAMOND;
+      } else if (quo >= 6) {
+        tier = Tier.MASTER;
+      }
+      if (tier !== Tier.MASTER) {
+        const quo2: number = Math.floor(rest / 100);
+        lp = rest % 100;
+        if (quo2 === 0) {
+          rank = Rank.IV;
+        } else if (quo2 === 1) {
+          rank = Rank.III;
+        } else if (quo2 === 2) {
+          rank = Rank.II;
+        } else if (quo2 >= 3) {
+          rank = Rank.I;
+        }
+      } else {
+        lp = rest;
+      }
+      if (tier === Tier.MASTER) {
+        o.eloString = `${tier} + ${lp + (quo - 6) * 400}lp`;
+      } else {
+        o.eloString = `${tier} ${rank} ${lp.toFixed(0)}lp`;
+      }
+    },
+    initOverview() {
+      Object.values(Role).forEach((r: Role) => {
+        this.createOverview(true, r);
+        this.createOverview(false, r);
+      });
+      this.overviewLst.push({
+        role: RoleSelectable.ALL,
+        isAlly: true,
+        winrateLastGame: 0,
+        calculatedElo: 0,
+        eloString: "",
+        seasoninrate: 0,
+        championPlayed: "",
+      });
+      this.overviewLst.push({
+        role: RoleSelectable.ALL,
+        isAlly: false,
+        winrateLastGame: 0,
+        calculatedElo: 0,
+        eloString: "",
+        seasoninrate: 0,
+        championPlayed: "",
+      });
+    },
+    createOverview(isAlly: boolean, role: Role) {
+      const p = this.getParticipantByRoleAndAlly(role, isAlly);
+      if (p) {
+        this.overviewLst.push({
+          role: role,
+          isAlly: isAlly,
+          winrateLastGame: 0,
+          calculatedElo: p.calculatedElo,
+          eloString: this.getEloString(p.tier, p.rank, p.leaguePoints),
+          seasoninrate: 0,
+          championPlayed: p.championPlayed,
+        });
+      } else {
+        this.overviewLst.push({
+          role: role,
+          isAlly: isAlly,
+          winrateLastGame: 0,
+          calculatedElo: 0,
+          eloString: "",
+          seasoninrate: 0,
+          championPlayed: "",
+        });
+      }
+    },
+    getEloString(tier: Tier, rank: Rank, lp: number): string {
+      return `${tier} ${rank} ${lp}lp`;
+    },
     changeSelectedStat() {
       switch (this.statSelected) {
         case GameStatDisplay.KDA:
@@ -180,44 +351,86 @@ export default defineComponent({
           break;
         case GameStatDisplay.DMG_DEALT:
           this.kdaRadarChartData.datasets.forEach((d) => {
-            d.data = this.lstParticipant
-              .filter((p) => p.ally === (d.label === "ally"))
-              .map((p) => Math.log(+p.dmgDealt.toFixed(2) + 1));
+            let res: number[] = [];
+            Object.values(Role).forEach((r) => {
+              const p = this.getParticipantByRoleAndAlly(r, d.label === "ally");
+              if (p) {
+                res.push(Math.log(+p.dmgDealt.toFixed(2) + 1));
+              } else {
+                res.push(0);
+              }
+            });
+            d.data = res;
           });
           break;
         case GameStatDisplay.DMG_TAKEN:
           this.kdaRadarChartData.datasets.forEach((d) => {
-            d.data = this.lstParticipant
-              .filter((p) => p.ally === (d.label === "ally"))
-              .map((p) => Math.log(+p.dmgTaken.toFixed(2) + 1));
+            let res: number[] = [];
+            Object.values(Role).forEach((r) => {
+              const p = this.getParticipantByRoleAndAlly(r, d.label === "ally");
+              if (p) {
+                res.push(Math.log(+p.dmgTaken.toFixed(2) + 1));
+              } else {
+                res.push(0);
+              }
+            });
+            d.data = res;
           });
           break;
         case GameStatDisplay.GOLD:
           this.kdaRadarChartData.datasets.forEach((d) => {
-            d.data = this.lstParticipant
-              .filter((p) => p.ally === (d.label === "ally"))
-              .map((p) => Math.log(+p.gold.toFixed(2) + 1));
+            let res: number[] = [];
+            Object.values(Role).forEach((r) => {
+              const p = this.getParticipantByRoleAndAlly(r, d.label === "ally");
+              if (p) {
+                res.push(Math.log(+p.gold.toFixed(2) + 1));
+              } else {
+                res.push(0);
+              }
+            });
+            d.data = res;
           });
           break;
         case GameStatDisplay.LONGEST_TIME_LIVING:
           this.kdaRadarChartData.datasets.forEach((d) => {
-            d.data = this.lstParticipant
-              .filter((p) => p.ally === (d.label === "ally"))
-              .map((p) => Math.log(+p.longestTimeLiving.toFixed(2) + 1));
+            let res: number[] = [];
+            Object.values(Role).forEach((r) => {
+              const p = this.getParticipantByRoleAndAlly(r, d.label === "ally");
+              if (p) {
+                res.push(Math.log(+p.longestTimeLiving.toFixed(2) + 1));
+              } else {
+                res.push(0);
+              }
+            });
+            d.data = res;
           });
           break;
         case GameStatDisplay.TOTAL_CS:
           this.kdaRadarChartData.datasets.forEach((d) => {
-            d.data = this.lstParticipant
-              .filter((p) => p.ally === (d.label === "ally"))
-              .map((p) => Math.log(+p.totalcs.toFixed(2) + 1));
+            let res: number[] = [];
+            Object.values(Role).forEach((r) => {
+              const p = this.getParticipantByRoleAndAlly(r, d.label === "ally");
+              if (p) {
+                res.push(Math.log(+p.totalcs.toFixed(2) + 1));
+              } else {
+                res.push(0);
+              }
+            });
+            d.data = res;
           });
           break;
         case GameStatDisplay.VISION_SCORE:
           this.kdaRadarChartData.datasets.forEach((d) => {
-            d.data = this.lstParticipant
-              .filter((p) => p.ally === (d.label === "ally"))
-              .map((p) => Math.log(+p.visionScore.toFixed(2) + 1));
+            let res: number[] = [];
+            Object.values(Role).forEach((r) => {
+              const p = this.getParticipantByRoleAndAlly(r, d.label === "ally");
+              if (p) {
+                res.push(Math.log(+p.visionScore.toFixed(2) + 1));
+              } else {
+                res.push(0);
+              }
+            });
+            d.data = res;
           });
           break;
       }
@@ -233,21 +446,37 @@ export default defineComponent({
     returnGames() {
       this.$router.push({ name: "DisplayGames" });
     },
-    calculateWinrateByTeam(isAlly: boolean): number {
+    calculateWinrateByTeam(isAlly: boolean, isSeanson: boolean): number {
       let nbrGame = 0;
       let nbrWin = 0;
 
       this.lstParticipant
         .filter((p) => p.ally === isAlly)
         .forEach((p) => {
-          console.log("p");
-          console.log(p);
-          nbrWin = nbrWin + p.totalWin;
-          nbrGame = nbrGame + p.totalWin + p.totalLoose;
+          if (isSeanson) {
+            nbrWin = nbrWin + p.totalWinSeason;
+            nbrGame = nbrGame + p.totalWinSeason + p.totalLooseSeason;
+          } else {
+            nbrWin = nbrWin + p.totalWin;
+            nbrGame = nbrGame + p.totalWin + p.totalLoose;
+          }
         });
-      return (nbrWin * 100) / nbrGame;
+      const res = (nbrWin * 100) / nbrGame;
+      if (isSeanson) {
+        this.getOverViewByRoleAndAlly(RoleSelectable.ALL, isAlly).seasoninrate =
+          res;
+      } else {
+        this.getOverViewByRoleAndAlly(
+          RoleSelectable.ALL,
+          isAlly
+        ).winrateLastGame = res;
+      }
+      return res;
     },
-    calculateWinrateByPositionByTeam(isAlly: boolean): number[] {
+    calculateWinrateByPositionByTeam(
+      isAlly: boolean,
+      isSeason: boolean
+    ): number[] {
       let winrateTop = -1;
       let winrateJungle = -1;
       let winrateMid = -1;
@@ -256,25 +485,72 @@ export default defineComponent({
       this.lstParticipant
         .filter((p) => p.ally === isAlly)
         .forEach((p) => {
+          let overView = this.getOverViewByRoleAndAlly(p.teamPosition, isAlly);
           switch (p.teamPosition) {
             case Role.TOP: {
-              winrateTop = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+              if (isSeason) {
+                winrateTop =
+                  (p.totalWinSeason * 100) /
+                  (p.totalLooseSeason + p.totalWinSeason);
+                overView.seasoninrate = winrateTop;
+                //winrateTop = Math.log(winrateTop * 4) + 10;
+              } else {
+                winrateTop = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+                overView.winrateLastGame = winrateTop;
+              }
               break;
             }
             case Role.JUNGLE: {
-              winrateJungle = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+              if (isSeason) {
+                winrateJungle =
+                  (p.totalWinSeason * 100) /
+                  (p.totalLooseSeason + p.totalWinSeason);
+                overView.seasoninrate = winrateJungle;
+                //winrateJungle = Math.log(winrateJungle * 4) + 10;
+              } else {
+                winrateJungle =
+                  (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+                overView.winrateLastGame = winrateJungle;
+              }
               break;
             }
             case Role.MIDDLE: {
-              winrateMid = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+              if (isSeason) {
+                winrateMid =
+                  (p.totalWinSeason * 100) /
+                  (p.totalLooseSeason + p.totalWinSeason);
+                overView.seasoninrate = winrateMid;
+                //winrateMid = Math.log(winrateMid * 4) + 10;
+              } else {
+                winrateMid = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+                overView.winrateLastGame = winrateMid;
+              }
               break;
             }
             case Role.BOTTOM: {
-              winrateAdc = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+              if (isSeason) {
+                winrateAdc =
+                  (p.totalWinSeason * 100) /
+                  (p.totalLooseSeason + p.totalWinSeason);
+                overView.seasoninrate = winrateAdc;
+                //winrateAdc = Math.log(winrateAdc * 4) + 10;
+              } else {
+                winrateAdc = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+                overView.winrateLastGame = winrateAdc;
+              }
               break;
             }
             case Role.UTILITY: {
-              winrateSupp = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+              if (isSeason) {
+                winrateSupp =
+                  (p.totalWinSeason * 100) /
+                  (p.totalLooseSeason + p.totalWinSeason);
+                overView.seasoninrate = winrateSupp;
+                //winrateSupp = Math.log(winrateSupp * 4) + 10;
+              } else {
+                winrateSupp = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
+                overView.winrateLastGame = winrateSupp;
+              }
               break;
             }
           }
@@ -329,6 +605,7 @@ export default defineComponent({
           type: MessageType.ERROR,
         });
       }
+
       return [winrateTop, winrateJungle, winrateMid, winrateAdc, winrateSupp];
     },
     createGraphRadarKda() {
@@ -383,6 +660,51 @@ export default defineComponent({
             pointHoverBackgroundColor: "#fff",
             pointHoverBorderColor:
               this.$vuetify.theme.themes.light.colors.error,
+          },
+        ],
+      };
+    },
+    createWinrateBarChart() {
+      this.winratebarCharOption = {
+        indexAxis: "y",
+        // Elements options apply to all of the options unless overridden in a dataset
+        // In this case, we are setting the border of each horizontal bar to be 2px wide
+        elements: {
+          bar: {
+            borderWidth: 2,
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            grid: {
+              display: false,
+            },
+          },
+        },
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "right",
+          },
+        },
+      };
+      this.winratebarChartData = {
+        labels: [""],
+        datasets: [
+          {
+            label: "Ally",
+            data: [this.calculateWinrateByTeam(true, true)],
+            backgroundColor: this.$vuetify.theme.themes.light.colors.warn,
+          },
+          {
+            label: "Enemy",
+            data: [this.calculateWinrateByTeam(false, true)],
+            backgroundColor: this.$vuetify.theme.themes.light.colors.error,
           },
         ],
       };
@@ -483,23 +805,86 @@ export default defineComponent({
           },
         ],
       };
-      console.log("this.rankRadarChartData");
-      console.log(this.rankRadarChartData);
     },
     getEloListByAlly(ally: boolean): number[] {
-      return this.lstParticipant
-        .filter((p) => p.ally === ally)
-        .map((p) => p.calculatedElo);
+      let res: number[] = [];
+      Object.values(Role).forEach((r) => {
+        const p = this.getParticipantByRoleAndAlly(r, ally);
+        if (p) {
+          res.push(p.calculatedElo);
+        } else {
+          res.push(0);
+        }
+      });
+      return res;
     },
     getkdaListByAlly(ally: boolean): number[] {
-      return this.lstParticipant
-        .filter((p) => p.ally === ally)
-        .map((p) => Math.log(+p.kda.toFixed(2) + 1));
+      let res: number[] = [];
+      Object.values(Role).forEach((r) => {
+        const p = this.getParticipantByRoleAndAlly(r, ally);
+        if (p) {
+          res.push(Math.log(+p.kda.toFixed(2) + 1));
+        } else {
+          res.push(0);
+        }
+      });
+      return res;
     },
-    createGraphRadar(
-      winRateAllyByPostion: number[],
-      winRateEnemyByPostion: number[]
-    ) {
+    createWinrateGraphRadar() {
+      this.winrateRadarChartOption = {
+        responsive: true,
+        scales: {
+          r: {
+            ticks: {
+              count: 0,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const res = context.dataset.data[context.dataIndex];
+                if (typeof res === "number") {
+                  //return Math.pow(res, 1.0 / 9.0).toFixed(2);
+                  return res.toFixed(2) + "%";
+                } else {
+                  return "";
+                }
+              },
+            },
+          },
+        },
+      };
+      this.winrateRadarChartData = {
+        labels: Object.keys(Role),
+        datasets: [
+          {
+            label: "ally",
+            fill: true,
+            borderColor: this.$vuetify.theme.themes.light.colors.warn,
+            data: this.calculateWinrateByPositionByTeam(true, true),
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: this.$vuetify.theme.themes.light.colors.warn,
+          },
+          {
+            label: "enemy",
+            borderColor: this.$vuetify.theme.themes.light.colors.error,
+            fill: true,
+            data: this.calculateWinrateByPositionByTeam(false, true),
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor:
+              this.$vuetify.theme.themes.light.colors.error,
+          },
+        ],
+      };
+    },
+    createGraphRadar() {
       this.radarChartOption = {
         responsive: true,
         scales: {
@@ -516,6 +901,15 @@ export default defineComponent({
           },
         },
       };
+      const winRateAllyByPostion = this.calculateWinrateByPositionByTeam(
+        true,
+        false
+      );
+      const winRateEnemyByPostion = this.calculateWinrateByPositionByTeam(
+        false,
+        false
+      );
+
       this.radarChartData = {
         labels: Object.keys(Role),
         datasets: [
@@ -723,7 +1117,15 @@ export default defineComponent({
         ],
       };
     },
-    createGraphBar(winRateAlly: number, winRateEnemy: number) {
+    getOverViewByRoleAndAlly(
+      role: Role | RoleSelectable,
+      isAlly: boolean
+    ): OverView {
+      return this.overviewLst.filter(
+        (o) => o.isAlly === isAlly && o.role === role
+      )[0];
+    },
+    createGraphBar() {
       this.barCharOption = {
         indexAxis: "y",
         elements: {
@@ -750,23 +1152,22 @@ export default defineComponent({
           },
         },
       };
+
       this.barChartData = {
         labels: [""],
         datasets: [
           {
             label: "Ally",
-            data: [winRateAlly],
+            data: [this.calculateWinrateByTeam(true, false)],
             backgroundColor: this.$vuetify.theme.themes.light.colors.warn,
           },
           {
             label: "Enemy",
-            data: [winRateEnemy],
+            data: [this.calculateWinrateByTeam(false, false)],
             backgroundColor: this.$vuetify.theme.themes.light.colors.error,
           },
         ],
       };
-      console.log("barChartData");
-      console.log(this.barChartData);
     },
   },
 });

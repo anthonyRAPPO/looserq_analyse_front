@@ -146,7 +146,6 @@ export default defineComponent({
       return this.game.win ? "cardGame winCard" : "cardGame looseCard";
     },
     gameSelectionChange() {
-      console.log("emit");
       this.$emit("changeSelectionGame", {
         selected: this.selected,
         game: this.game,
