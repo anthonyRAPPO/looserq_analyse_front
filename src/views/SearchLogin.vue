@@ -99,6 +99,7 @@ export default defineComponent({
                 type: MessageType.INFO,
               });
             } else {
+              this.$store.commit("SET_PLATFORM", this.platformSelected);
               this.$store.commit("SET_LOGIN", this.nameSelected);
               this.$store.commit("SET_GAMES", lstGame);
               this.$router.push({ name: "DisplayGames" });

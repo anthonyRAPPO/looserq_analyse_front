@@ -106,7 +106,7 @@
         "
       ></RadarChart>
       <h2 :class="setResultClass()">
-        {{ lstGames[0].win ? "Victory" : "Loose" }}
+        {{ lstParticipant.filter((p) => p.ally)[0].win ? "Victory" : "Loose" }}
       </h2>
     </v-window-item>
     <v-window-item value="five">
@@ -244,13 +244,22 @@ export default defineComponent({
     fillOverViewTeamEloByAlly(isAlly: boolean) {
       const o = this.getOverViewByRoleAndAlly(RoleSelectable.ALL, isAlly);
       let totalElo = 0;
+      let nbr = 0;
       this.lstParticipant
-        .filter((p) => p.ally === isAlly)
+        .filter(
+          (p) =>
+            p.ally === isAlly &&
+            p.rank &&
+            p.tier &&
+            p.rank !== Rank.EMPTY &&
+            p.tier !== Tier.EMPTY
+        )
         .forEach((p) => {
           totalElo = totalElo + p.calculatedElo;
+          nbr++;
         });
 
-      totalElo = totalElo / 5;
+      totalElo = totalElo / nbr;
       o.calculatedElo = totalElo;
       const quo: number = Math.floor(totalElo / 400);
       const rest: number = totalElo % 400;
@@ -285,6 +294,7 @@ export default defineComponent({
       } else {
         lp = rest;
       }
+
       if (tier === Tier.MASTER) {
         o.eloString = `${tier} + ${(lp + (quo - 6) * 400).toFixed(0)}lp`;
       } else {
@@ -304,6 +314,7 @@ export default defineComponent({
         eloString: "",
         seasoninrate: 0,
         championPlayed: "",
+        valid: true,
       });
       this.overviewLst.push({
         role: RoleSelectable.ALL,
@@ -313,29 +324,50 @@ export default defineComponent({
         eloString: "",
         seasoninrate: 0,
         championPlayed: "",
+        valid: true,
       });
     },
     createOverview(isAlly: boolean, role: Role) {
       const p = this.getParticipantByRoleAndAlly(role, isAlly);
       if (p) {
-        this.overviewLst.push({
-          role: role,
-          isAlly: isAlly,
-          winrateLastGame: 0,
-          calculatedElo: p.calculatedElo,
-          eloString: this.getEloString(p.tier, p.rank, p.leaguePoints),
-          seasoninrate: 0,
-          championPlayed: p.championPlayed,
-        });
+        if (
+          p.tier &&
+          p.rank &&
+          p.tier !== Tier.EMPTY &&
+          p.rank !== Rank.EMPTY
+        ) {
+          this.overviewLst.push({
+            role: role,
+            isAlly: isAlly,
+            winrateLastGame: 0,
+            calculatedElo: p.calculatedElo,
+            eloString: this.getEloString(p.tier, p.rank, p.leaguePoints),
+            seasoninrate: 0,
+            championPlayed: p.championPlayed,
+            valid: true,
+          });
+        } else {
+          this.overviewLst.push({
+            role: role,
+            isAlly: isAlly,
+            winrateLastGame: 0,
+            calculatedElo: 0,
+            eloString: "No game played ",
+            seasoninrate: 0,
+            championPlayed: p.championPlayed,
+            valid: false,
+          });
+        }
       } else {
         this.overviewLst.push({
           role: role,
           isAlly: isAlly,
           winrateLastGame: 0,
           calculatedElo: 0,
-          eloString: "",
+          eloString: "No game played ",
           seasoninrate: 0,
           championPlayed: "",
+          valid: false,
         });
       }
     },
@@ -437,7 +469,7 @@ export default defineComponent({
       this.kdaKey++;
     },
     setResultClass() {
-      if (this.lstGames[0].win) {
+      if (this.lstParticipant.filter((p) => p.ally)[0].win) {
         return "winTittle";
       } else {
         return "looseTittle";
@@ -477,135 +509,83 @@ export default defineComponent({
       isAlly: boolean,
       isSeason: boolean
     ): number[] {
-      let winrateTop = -1;
-      let winrateJungle = -1;
-      let winrateMid = -1;
-      let winrateAdc = -1;
-      let winrateSupp = -1;
+      let winrateTop = 0;
+      let winrateJungle = 0;
+      let winrateMid = 0;
+      let winrateAdc = 0;
+      let winrateSupp = 0;
       this.lstParticipant
         .filter((p) => p.ally === isAlly)
         .forEach((p) => {
-          let overView = this.getOverViewByRoleAndAlly(p.teamPosition, isAlly);
-          switch (p.teamPosition) {
-            case Role.TOP: {
-              if (isSeason) {
-                winrateTop =
-                  (p.totalWinSeason * 100) /
-                  (p.totalLooseSeason + p.totalWinSeason);
-                overView.seasoninrate = winrateTop;
-                //winrateTop = Math.log(winrateTop * 4) + 10;
-              } else {
-                winrateTop = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
-                overView.winrateLastGame = winrateTop;
+          const totalGameSeason = p.totalLooseSeason + p.totalWinSeason;
+          const totalGame = p.totalLoose + p.totalWin;
+          if (
+            (totalGameSeason > 0 && isSeason) ||
+            (totalGame > 0 && !isSeason)
+          ) {
+            let overView = this.getOverViewByRoleAndAlly(
+              p.teamPosition,
+              isAlly
+            );
+            switch (p.teamPosition) {
+              case Role.TOP: {
+                if (isSeason) {
+                  winrateTop = (p.totalWinSeason * 100) / totalGameSeason;
+                  overView.seasoninrate = winrateTop;
+                  //winrateTop = Math.log(winrateTop * 4) + 10;
+                } else {
+                  winrateTop = (p.totalWin * 100) / totalGame;
+                  overView.winrateLastGame = winrateTop;
+                }
+                break;
               }
-              break;
-            }
-            case Role.JUNGLE: {
-              if (isSeason) {
-                winrateJungle =
-                  (p.totalWinSeason * 100) /
-                  (p.totalLooseSeason + p.totalWinSeason);
-                overView.seasoninrate = winrateJungle;
-                //winrateJungle = Math.log(winrateJungle * 4) + 10;
-              } else {
-                winrateJungle =
-                  (p.totalWin * 100) / (p.totalLoose + p.totalWin);
-                overView.winrateLastGame = winrateJungle;
+              case Role.JUNGLE: {
+                if (isSeason) {
+                  winrateJungle = (p.totalWinSeason * 100) / totalGameSeason;
+                  overView.seasoninrate = winrateJungle;
+                  //winrateJungle = Math.log(winrateJungle * 4) + 10;
+                } else {
+                  winrateJungle = (p.totalWin * 100) / totalGame;
+                  overView.winrateLastGame = winrateJungle;
+                }
+                break;
               }
-              break;
-            }
-            case Role.MIDDLE: {
-              if (isSeason) {
-                winrateMid =
-                  (p.totalWinSeason * 100) /
-                  (p.totalLooseSeason + p.totalWinSeason);
-                overView.seasoninrate = winrateMid;
-                //winrateMid = Math.log(winrateMid * 4) + 10;
-              } else {
-                winrateMid = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
-                overView.winrateLastGame = winrateMid;
+              case Role.MIDDLE: {
+                if (isSeason) {
+                  winrateMid = (p.totalWinSeason * 100) / totalGameSeason;
+                  overView.seasoninrate = winrateMid;
+                  //winrateMid = Math.log(winrateMid * 4) + 10;
+                } else {
+                  winrateMid = (p.totalWin * 100) / totalGame;
+                  overView.winrateLastGame = winrateMid;
+                }
+                break;
               }
-              break;
-            }
-            case Role.BOTTOM: {
-              if (isSeason) {
-                winrateAdc =
-                  (p.totalWinSeason * 100) /
-                  (p.totalLooseSeason + p.totalWinSeason);
-                overView.seasoninrate = winrateAdc;
-                //winrateAdc = Math.log(winrateAdc * 4) + 10;
-              } else {
-                winrateAdc = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
-                overView.winrateLastGame = winrateAdc;
+              case Role.BOTTOM: {
+                if (isSeason) {
+                  winrateAdc = (p.totalWinSeason * 100) / totalGameSeason;
+                  overView.seasoninrate = winrateAdc;
+                  //winrateAdc = Math.log(winrateAdc * 4) + 10;
+                } else {
+                  winrateAdc = (p.totalWin * 100) / totalGame;
+                  overView.winrateLastGame = winrateAdc;
+                }
+                break;
               }
-              break;
-            }
-            case Role.UTILITY: {
-              if (isSeason) {
-                winrateSupp =
-                  (p.totalWinSeason * 100) /
-                  (p.totalLooseSeason + p.totalWinSeason);
-                overView.seasoninrate = winrateSupp;
-                //winrateSupp = Math.log(winrateSupp * 4) + 10;
-              } else {
-                winrateSupp = (p.totalWin * 100) / (p.totalLoose + p.totalWin);
-                overView.winrateLastGame = winrateSupp;
+              case Role.UTILITY: {
+                if (isSeason) {
+                  winrateSupp = (p.totalWinSeason * 100) / totalGameSeason;
+                  overView.seasoninrate = winrateSupp;
+                  //winrateSupp = Math.log(winrateSupp * 4) + 10;
+                } else {
+                  winrateSupp = (p.totalWin * 100) / totalGame;
+                  overView.winrateLastGame = winrateSupp;
+                }
+                break;
               }
-              break;
             }
           }
         });
-      if (winrateTop === -1) {
-        winrateTop = 0;
-        eventBus.emit("ouvrir-popup", {
-          text:
-            "Error calculating " +
-            (isAlly ? "ally" : "enemy") +
-            " top winrate ",
-          type: MessageType.ERROR,
-        });
-      }
-      if (winrateJungle === -1) {
-        winrateJungle = 0;
-        eventBus.emit("ouvrir-popup", {
-          text:
-            "Error calculating " +
-            (isAlly ? "ally" : "enemy") +
-            " jungle winrate ",
-          type: MessageType.ERROR,
-        });
-      }
-      if (winrateMid === -1) {
-        winrateMid = 0;
-        eventBus.emit("ouvrir-popup", {
-          text:
-            "Error calculating " +
-            (isAlly ? "ally" : "enemy") +
-            " mid winrate ",
-          type: MessageType.ERROR,
-        });
-      }
-      if (winrateAdc === -1) {
-        winrateAdc = 0;
-        eventBus.emit("ouvrir-popup", {
-          text:
-            "Error calculating " +
-            (isAlly ? "ally" : "enemy") +
-            " adc winrate ",
-          type: MessageType.ERROR,
-        });
-      }
-      if (winrateSupp === -1) {
-        winrateSupp = 0;
-        eventBus.emit("ouvrir-popup", {
-          text:
-            "Error calculating " +
-            (isAlly ? "ally" : "enemy") +
-            " supp winrate ",
-          type: MessageType.ERROR,
-        });
-      }
-
       return [winrateTop, winrateJungle, winrateMid, winrateAdc, winrateSupp];
     },
     createGraphRadarKda() {
@@ -823,7 +803,12 @@ export default defineComponent({
       Object.values(Role).forEach((r) => {
         const p = this.getParticipantByRoleAndAlly(r, ally);
         if (p) {
-          res.push(Math.log(+p.kda.toFixed(2) + 1));
+          if (typeof p.kda === "number") {
+            res.push(Math.log(+p.kda.toFixed(2) + 1));
+          } else {
+            const newKda = (p.kill + p.assist) / 0.5;
+            res.push(Math.log(+newKda.toFixed(2) + 1));
+          }
         } else {
           res.push(0);
         }
@@ -934,16 +919,6 @@ export default defineComponent({
           },
         ],
       };
-    },
-    getRankbyElo(elo: number): string {
-      const lstRes: Participant[] = this.lstParticipant.filter(
-        (p) => p.leaguePoints === elo
-      );
-      if (lstRes.length === 1) {
-        return `${lstRes[0].tier}${lstRes[0].rank}`;
-      } else {
-        return "undefined";
-      }
     },
     getEloByRoleAlly(role: string, ally: boolean): number {
       const p = this.getParticipantByRoleAndAlly(role, ally);

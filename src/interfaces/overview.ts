@@ -9,4 +9,5 @@ export interface OverView {
   eloString: string;
   seasoninrate: number;
   championPlayed: string;
+  valid: boolean;
 }

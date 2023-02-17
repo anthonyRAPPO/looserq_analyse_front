@@ -48,6 +48,7 @@ import { Participant } from "@/interfaces/participant";
 import Loading from "@/components/Loading.vue";
 import eventBus from "@/plugins/eventBus";
 import { MessageType } from "@/enumerations/messageType";
+import { tSMethodSignature } from "@babel/types";
 
 export default defineComponent({
   components: {
@@ -60,13 +61,19 @@ export default defineComponent({
       lstGames: [] as Game[],
       gameSelected: {} as Game | undefined,
       isLoading: false,
+      platformSelected: {} as Platform,
     };
   },
 
   mounted() {
     this.login = this.$store.state.login;
     this.lstGames = this.$store.state.lstGames;
-    if (this.login.length === 0 || this.lstGames.length === 0) {
+    this.platformSelected = this.$store.state.platformSelected;
+    if (
+      this.login.length === 0 ||
+      this.lstGames.length === 0 ||
+      this.platformSelected.length === 0
+    ) {
       this.$router.push({ name: "SearchLogin" });
     }
   },
@@ -88,11 +95,11 @@ export default defineComponent({
     launchGameAnalyse() {
       if (this.gameSelected && this.gameSelected.id) {
         this.isLoading = true;
-        /*apiService
+        apiService
           .getParticipantByGame(
             this.gameSelected,
             Queue.RANKED_SOLO,
-            Platform.EUW,
+            this.platformSelected,
             10
           )
           .then((res) => {
@@ -138,11 +145,11 @@ export default defineComponent({
                 type: MessageType.ERROR,
               });
             }
-          });*/
-        let lstParticipant: Participant[] = apiService.getParticipantByPass();
+          });
+        /*let lstParticipant: Participant[] = apiService.getParticipantByPass();
         this.isLoading = false;
         this.$store.commit("SET_PARTICIPANT", lstParticipant);
-        this.$router.push({ name: "DisplayStats" });
+        this.$router.push({ name: "DisplayStats" });*/
       }
     },
     returnLogin() {
