@@ -286,7 +286,7 @@ export default defineComponent({
         lp = rest;
       }
       if (tier === Tier.MASTER) {
-        o.eloString = `${tier} + ${lp + (quo - 6) * 400}lp`;
+        o.eloString = `${tier} + ${(lp + (quo - 6) * 400).toFixed(0)}lp`;
       } else {
         o.eloString = `${tier} ${rank} ${lp.toFixed(0)}lp`;
       }
