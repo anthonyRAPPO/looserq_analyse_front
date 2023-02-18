@@ -1,6 +1,8 @@
 <template>
   <Loading v-if="isLoading"></Loading>
-  <h2 class="textSelection">Select the game you want to analyse</h2>
+  <div class="containerTextSelection">
+    <h2 class="textSelection">Select the game you want to analyse</h2>
+  </div>
   <v-btn
     class="btnBackLogin"
     icon
@@ -17,7 +19,7 @@
     rounded="lg"
     size="x-large"
     color="secondary"
-    variant="outlined"
+    :variant="getVariantByScreenSize()"
     @click="launchGameAnalyse()"
     :disabled="!gameSelected || !gameSelected.id"
   >
@@ -78,6 +80,13 @@ export default defineComponent({
     }
   },
   methods: {
+    getVariantByScreenSize() {
+      if (window.screen.width > 1350) {
+        return "outlined";
+      } else {
+        return "elevated";
+      }
+    },
     gameSelectionChange(event: GameBoxSelectEvent) {
       if (this.gameSelected && this.gameSelected.id) {
         //une game est déja selectionnée
@@ -95,7 +104,7 @@ export default defineComponent({
     launchGameAnalyse() {
       if (this.gameSelected && this.gameSelected.id) {
         this.isLoading = true;
-        apiService
+        /*apiService
           .getParticipantByGame(
             this.gameSelected,
             Queue.RANKED_SOLO,
@@ -145,11 +154,11 @@ export default defineComponent({
                 type: MessageType.ERROR,
               });
             }
-          });
-        /*let lstParticipant: Participant[] = apiService.getParticipantByPass();
+          });*/
+        let lstParticipant: Participant[] = apiService.getParticipantByPass();
         this.isLoading = false;
         this.$store.commit("SET_PARTICIPANT", lstParticipant);
-        this.$router.push({ name: "DisplayStats" });*/
+        this.$router.push({ name: "DisplayStats" });
       }
     },
     returnLogin() {
@@ -164,16 +173,33 @@ export default defineComponent({
   position: fixed;
   bottom: 5%;
   right: 5%;
+  z-index: 2;
 }
 
 .btnBackLogin {
   position: fixed;
   top: 2%;
   left: 2%;
+  z-index: 2;
 }
 
 .textSelection {
   margin-top: 1em;
   margin-bottom: 1em;
+}
+
+@media only screen and (max-width: 1350px) {
+  .btnAnalyse {
+    left: 50%;
+    margin-left: -140px;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .containerTextSelection {
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 </style>

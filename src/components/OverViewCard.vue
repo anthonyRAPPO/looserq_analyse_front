@@ -26,7 +26,7 @@
       <v-col cols="12"> Last 10 games winrate </v-col>
     </v-row>
     <v-row class="statBar">
-      <v-col cols="2"
+      <v-col md="2" sm="3"
         ><span
           :class="
             getClassSpan(
@@ -38,7 +38,7 @@
           >{{ allyOverView.winrateLastGame.toFixed(2) }}%</span
         ></v-col
       >
-      <v-col cols="8">
+      <v-col md="8" sm="6">
         <v-progress-linear
           :model-value="getRatioLastGames()"
           height="25"
@@ -47,7 +47,7 @@
         >
         </v-progress-linear>
       </v-col>
-      <v-col cols="2"
+      <v-col md="2" sm="3"
         ><span
           :class="
             getClassSpan(
@@ -64,7 +64,7 @@
       <v-col cols="12"> Rank this season </v-col>
     </v-row>
     <v-row class="statBar">
-      <v-col cols="2"
+      <v-col md="2" sm="3"
         ><span
           :class="
             getClassSpan(
@@ -76,7 +76,7 @@
           >{{ allyOverView.eloString }}</span
         ></v-col
       >
-      <v-col cols="8">
+      <v-col md="8" sm="6">
         <v-progress-linear
           :model-value="getRatioRank()"
           height="25"
@@ -85,7 +85,7 @@
         >
         </v-progress-linear>
       </v-col>
-      <v-col cols="2"
+      <v-col md="2" sm="3"
         ><span
           :class="
             getClassSpan(
@@ -102,7 +102,7 @@
       <v-col cols="12"> Winrate this season </v-col>
     </v-row>
     <v-row class="statBar">
-      <v-col cols="2"
+      <v-col md="2" sm="3"
         ><span
           :class="
             getClassSpan(
@@ -114,7 +114,7 @@
           >{{ allyOverView.seasoninrate.toFixed(2) }}%</span
         ></v-col
       >
-      <v-col cols="8">
+      <v-col md="8" sm="6">
         <v-progress-linear
           :model-value="getRatioWinrate()"
           height="25"
@@ -123,7 +123,7 @@
         >
         </v-progress-linear>
       </v-col>
-      <v-col cols="2"
+      <v-col md="2" sm="3"
         ><span
           :class="
             getClassSpan(
@@ -269,5 +269,26 @@ export default defineComponent({
   width: 100px;
   margin-left: auto;
   margin-right: auto;
+}
+
+@media only screen and (max-width: 1100px) {
+  .cardOverview {
+    width: 98%;
+    padding: 0.5em;
+  }
+}
+
+@media only screen and (max-width: 900px) {
+  .allyColor {
+    font-size: 0.8em;
+  }
+
+  .enemyColor {
+    font-size: 0.8em;
+  }
+
+  .winColor {
+    font-size: 0.8em;
+  }
 }
 </style>

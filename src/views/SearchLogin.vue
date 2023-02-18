@@ -2,7 +2,7 @@
   <div>
     <Loading v-if="isLoading"></Loading>
     <v-row align="center" class="welwomeText">
-      <v-col cols="12">
+      <v-col cols="12" class="looserQIntro">
         <h1>Welcome to LooserQAnalyse!</h1>
       </v-col>
       <v-col cols="12">
@@ -14,11 +14,13 @@
         ></v-img>
       </v-col>
       <v-col cols="12">
-        <h2>Analyse your last games to know if you are in looser Q</h2>
+        <h2 class="textIntro">
+          Analyse your last games to know if you are in looser Q
+        </h2>
       </v-col>
     </v-row>
     <v-row align="center" justify="center">
-      <v-col cols="1">
+      <v-col xl="1" lg="1" md="2" sm="2" cols="4">
         <v-select
           :items="lstPlatform"
           v-model="platformSelected"
@@ -26,7 +28,7 @@
           :disabled="isLoading"
         ></v-select>
       </v-col>
-      <v-col cols="3">
+      <v-col xl="3" lg="3" md="5" sm="5" cols="7">
         <v-text-field
           label="Name"
           v-model="nameSelected"
@@ -170,5 +172,23 @@ export default defineComponent({
   margin-right: auto;
   margin-left: auto;
   width: 15em;
+}
+
+.textIntro {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+@media only screen and (max-width: 600px) {
+  .looserQIntro {
+    display: none;
+  }
+  #logo {
+    width: 12em;
+  }
+
+  .textIntro {
+    font-size: 1em;
+  }
 }
 </style>

@@ -11,7 +11,7 @@
     <v-icon>mdi-arrow-left</v-icon>
   </v-btn>
   <h2 class="tittle">So...Are you in looser Q?</h2>
-  <v-tabs v-model="tab" class="tabStat">
+  <v-tabs v-model="tab" class="tabStat" show-arrows="mobile">
     <v-tab value="one">Last games</v-tab>
     <v-tab value="two">Rank</v-tab>
     <v-tab value="three">Season winrate</v-tab>
@@ -591,6 +591,7 @@ export default defineComponent({
     createGraphRadarKda() {
       this.kdaRadarChartOption = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: false,
@@ -667,9 +668,10 @@ export default defineComponent({
           },
         },
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: "right",
+            position: "bottom",
           },
         },
       };
@@ -692,6 +694,7 @@ export default defineComponent({
     createGraphRadarRank() {
       this.rankRadarChartOption = {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             display: false,
@@ -818,6 +821,7 @@ export default defineComponent({
     createWinrateGraphRadar() {
       this.winrateRadarChartOption = {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           r: {
             ticks: {
@@ -872,6 +876,7 @@ export default defineComponent({
     createGraphRadar() {
       this.radarChartOption = {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           r: {
             ticks: {
@@ -989,9 +994,10 @@ export default defineComponent({
           },
         },
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: "right",
+            position: "bottom",
           },
           tooltip: {
             callbacks: {
@@ -1121,9 +1127,10 @@ export default defineComponent({
           },
         },
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: "right",
+            position: "bottom",
           },
         },
       };
@@ -1161,12 +1168,16 @@ export default defineComponent({
 
 .sub-tittle {
   margin-top: 2em;
+  margin-left: auto;
+  margin-right: auto;
+  width: 90%;
 }
 
 .btnBackGames {
   position: fixed;
   top: 2%;
   left: 2%;
+  z-index: 2;
 }
 
 .winTittle {
@@ -1189,5 +1200,24 @@ export default defineComponent({
   margin-right: auto;
   margin-top: 1em;
   width: 20%;
+  min-width: 280px;
+}
+
+@media only screen and (max-width: 1060px) {
+  .tabStat {
+    width: 80%;
+  }
+}
+
+@media only screen and (max-width: 930px) {
+  .tabStat {
+    width: 90%;
+  }
+}
+
+@media only screen and (max-width: 820px) {
+  .tabStat {
+    width: 100%;
+  }
 }
 </style>

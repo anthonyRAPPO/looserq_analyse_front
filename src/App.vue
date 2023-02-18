@@ -15,7 +15,7 @@
     <div class="routerView">
       <router-view />
     </div>
-    <v-footer color="background" height="50" width="auto">
+    <v-footer color="background" width="auto">
       <div class="footer">
         <span>2023 - LooserQAnalyse - looserq.analyse@gmail.com</span>
       </div></v-footer
@@ -48,7 +48,7 @@ export default defineComponent({
   margin-bottom: 2em;
 }
 .footer {
-  height: 1em;
+  height: 3em;
   margin: auto;
   font-size: 0.85em;
 }
@@ -56,10 +56,19 @@ export default defineComponent({
 .alert {
   width: 30%;
   text-align: left;
+  min-width: 250px;
+  z-index: 2;
 }
 
 :deep(.v-alert__close) {
   -webkit-margin-start: 10px;
   margin-inline-start: 10px;
+}
+
+@media only screen and (max-width: 250px) {
+  .alert {
+    width: 100%;
+    min-width: 100px;
+  }
 }
 </style>

@@ -53,8 +53,27 @@ export default defineComponent({
 
 <style scoped>
 .radarContainer {
-  width: 30%;
+  width: 100%;
+}
+
+.radarContainer .radarChart {
   margin-left: auto;
   margin-right: auto;
+  width: 400px !important;
+  height: 400px !important;
+}
+
+@media only screen and (max-width: 415px) {
+  .radarContainer .radarChart {
+    width: 350px !important;
+    height: 350px !important;
+  }
+}
+
+@media only screen and (max-width: 365px) {
+  .radarContainer .radarChart {
+    width: 300px !important;
+    height: 300px !important;
+  }
 }
 </style>

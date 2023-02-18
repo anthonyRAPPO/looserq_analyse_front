@@ -1,7 +1,7 @@
 <template>
   <v-card v-if="!error" :class="getClassOfCard()" elevation="10">
     <v-row>
-      <v-col cols="3">
+      <v-col sm="3" cols="4">
         <div class="containerCenter">
           <div class="center">
             <div class="containerWinSpan">
@@ -13,7 +13,7 @@
           </div>
         </div>
       </v-col>
-      <v-col cols="2">
+      <v-col sm="2" cols="3">
         <div class="containerimgUser">
           <v-img
             :src="getSrcImgByGame()"
@@ -22,15 +22,20 @@
             alt="champ user"
           ></v-img>
         </div>
-        <div>
-          <span>
+        <div class="kda">
+          <div class="kdacenter">
             {{ getKda() }}
-          </span>
+          </div>
         </div>
       </v-col>
-      <v-col cols="6">
+      <v-col cols="3" class="kdaCell">
+        <div class="kdacenter">
+          {{ getKda() }}
+        </div>
+      </v-col>
+      <v-col sm="6" class="colParticipantName">
         <v-row v-for="role in lstRole" :key="role" class="rowParticipant">
-          <v-col cols="5" class="colParticipant participantWin">
+          <v-col sm="5" cols="0" class="colParticipant participantWin">
             <span class="participantName">{{
               setLenghtName(
                 getParticipantByRoleAndWin(role, true)?.summonerName
@@ -59,7 +64,7 @@
               alt="champ participant"
             ></v-img
           ></v-col>
-          <v-col cols="5" class="colParticipant participantLoose"
+          <v-col sm="5" cols="0" class="colParticipant participantLoose"
             ><span class="participantName">{{
               setLenghtName(
                 getParticipantByRoleAndWin(role, false)?.summonerName
@@ -68,7 +73,7 @@
           >
         </v-row>
       </v-col>
-      <v-col cols="1">
+      <v-col sm="1" cols="2">
         <div class="containerCheckBox">
           <div class="centerCheckBox">
             <v-checkbox
@@ -170,6 +175,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.kdaCell {
+  display: none;
+}
 .imgUser {
   width: auto;
   height: 5em;
@@ -194,6 +202,7 @@ export default defineComponent({
   margin-top: 1em;
   margin-bottom: 1em;
   padding: 0.2em;
+  min-width: 600px;
   background-color: rgb(var(--v-theme-primary));
 }
 
@@ -257,6 +266,15 @@ export default defineComponent({
   width: 100%;
 }
 
+.centerkda {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  width: 100%;
+}
+
 .containerWinSpan {
   margin-top: 1em;
 }
@@ -274,5 +292,62 @@ export default defineComponent({
 .participantWin {
   text-align: right;
   padding-right: 0.8em;
+}
+
+@media only screen and (max-width: 600px) {
+  .colParticipantName {
+    display: none;
+  }
+
+  .kda {
+    display: none;
+  }
+
+  .kdacenter {
+    margin: 0;
+    position: absolute;
+    top: 65%;
+    -ms-transform: translateY(-65%);
+    transform: translateY(-65%);
+    left: 30%;
+    font-size: 1.1em;
+  }
+
+  .kdaCell {
+    display: block;
+    height: 6em;
+    position: relative;
+  }
+}
+
+@media only screen and (max-width: 599px) {
+  .cardGame {
+    min-width: 400px;
+  }
+
+  .centerCheckBox {
+    -ms-transform: translate(0%, -50%);
+    transform: translate(0%, -50%);
+  }
+}
+
+@media only screen and (max-width: 415px) {
+  .cardGame {
+    min-width: 300px;
+  }
+
+  .winSpan {
+    font-size: 1.4em;
+  }
+}
+
+@media only screen and (max-width: 301px) {
+  .cardGame {
+    min-width: 280px;
+  }
+
+  .winSpan {
+    font-size: 1.2em;
+  }
 }
 </style>

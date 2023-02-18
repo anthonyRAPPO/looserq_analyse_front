@@ -51,8 +51,27 @@ export default defineComponent({
 
 <style scoped>
 .barchartContainer {
-  width: 30%;
+  width: 100%;
+}
+
+.barchartContainer .barChart {
   margin-left: auto;
   margin-right: auto;
+  width: 500px !important;
+  height: 170px !important;
+}
+
+@media only screen and (max-width: 500px) {
+  .barchartContainer .barChart {
+    width: 320px !important;
+    height: 150px !important;
+  }
+}
+
+@media only screen and (max-width: 365px) {
+  .barchartContainer .barChart {
+    width: 280px !important;
+    height: 150px !important;
+  }
 }
 </style>
