@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import SearchLoginView from "../views/SearchLogin.vue";
 import DisplayGamesView from "../views/DisplayGames.vue";
 import DisplayStatsView from "../views/DisplayStats.vue";
@@ -10,19 +10,19 @@ const routes: Array<RouteRecordRaw> = [
     component: SearchLoginView,
   },
   {
-    path: "/",
+    path: "/games",
     name: "DisplayGames",
     component: DisplayGamesView,
   },
   {
-    path: "/",
+    path: "/stats",
     name: "DisplayStats",
     component: DisplayStatsView,
   },
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 

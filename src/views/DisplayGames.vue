@@ -50,6 +50,7 @@ import { Participant } from "@/interfaces/participant";
 import Loading from "@/components/Loading.vue";
 import eventBus from "@/plugins/eventBus";
 import { MessageType } from "@/enumerations/messageType";
+import { useMeta } from "vue-meta";
 import { tSMethodSignature } from "@babel/types";
 
 export default defineComponent({

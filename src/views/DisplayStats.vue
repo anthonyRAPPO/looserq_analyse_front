@@ -143,6 +143,7 @@ import { Tier } from "@/enumerations/Tier";
 import { Rank } from "@/enumerations/Rank";
 
 import { GameStatDisplay } from "@/enumerations/gameStatDisplay";
+import { useMeta } from "vue-meta";
 
 export default defineComponent({
   components: {
