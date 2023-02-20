@@ -10,7 +10,7 @@
       title="Warning"
       class="alert"
       variant="tonal"
-      text="We don't have the RIOT API production key yet, so requests can take a few minutes "
+      text="We do not yet have the production key of the RIOT API, so requests can take a few minutes. "
       :closable="true"
     ></v-alert>
     <div class="routerView">

@@ -48,6 +48,12 @@ export default defineComponent({
   components: {
     Radar,
   },
+  mounted() {
+    console.log("this.radarCharOption1");
+    console.log(this.radarCharOption);
+    console.log("this.radarChartData2");
+    console.log(this.radarChartData);
+  },
 });
 </script>
 

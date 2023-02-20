@@ -15,7 +15,7 @@
       </v-col>
       <v-col cols="12">
         <h2 class="textIntro">
-          Analyse your last games to know if you are in looser Q
+          Analyse your last games to see if you are in looser Q
         </h2>
       </v-col>
     </v-row>
@@ -149,7 +149,7 @@ export default defineComponent({
           });
       } else {
         eventBus.emit("ouvrir-popup", {
-          text: "Name is incorrect",
+          text: "The name is incorrect",
           type: MessageType.ERROR,
         });
       }

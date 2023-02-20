@@ -12,14 +12,28 @@
   </v-btn>
   <h2 class="tittle">So...Are you in looser Q?</h2>
   <v-tabs v-model="tab" class="tabStat" show-arrows="mobile">
-    <v-tab value="one">Last games</v-tab>
-    <v-tab value="two">Rank</v-tab>
-    <v-tab value="three">Season winrate</v-tab>
-    <v-tab value="four">Your game</v-tab>
-    <v-tab value="five">Overview</v-tab>
+    <v-tab value="one">Overview</v-tab>
+    <v-tab value="two">Last games</v-tab>
+    <v-tab value="three">Rank</v-tab>
+    <v-tab value="four">Season winrate</v-tab>
+    <v-tab value="five">Your game</v-tab>
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
+      <v-select
+        label="Select the lane you want to display"
+        :items="roleAvailable"
+        v-model="roleSelected"
+        class="selectStat"
+        @update:model-value="changeSelectedStat()"
+      ></v-select>
+      <OverViewCard
+        v-if="canOverview"
+        :allyOverView="getOverviewByRoleAndAlly(roleSelected, true)"
+        :enemyOverView="getOverviewByRoleAndAlly(roleSelected, false)"
+      ></OverViewCard>
+    </v-window-item>
+    <v-window-item value="two">
       <h3 class="sub-tittle">
         Winrate (%) per team over the last 10 games of each player :
       </h3>
@@ -42,7 +56,7 @@
         "
       ></RadarChart>
     </v-window-item>
-    <v-window-item value="two">
+    <v-window-item value="three">
       <h3 class="sub-tittle">Rank (actual season) per team of each player :</h3>
       <HorizontalBarChart
         :barCharData="rankbarChartData"
@@ -63,7 +77,7 @@
         "
       ></RadarChart>
     </v-window-item>
-    <v-window-item value="three">
+    <v-window-item value="four">
       <h3 class="sub-tittle">
         Winrate (actual season) per team of each player :
       </h3>
@@ -86,7 +100,7 @@
         "
       ></RadarChart>
     </v-window-item>
-    <v-window-item value="four">
+    <v-window-item value="five">
       <v-select
         label="Select the statistic you want to display"
         :items="statAvailable"
@@ -108,19 +122,6 @@
       <h2 :class="setResultClass()">
         {{ lstParticipant.filter((p) => p.ally)[0].win ? "Victory" : "Loose" }}
       </h2>
-    </v-window-item>
-    <v-window-item value="five">
-      <v-select
-        label="Select the lane you want to display"
-        :items="roleAvailable"
-        v-model="roleSelected"
-        class="selectStat"
-        @update:model-value="changeSelectedStat()"
-      ></v-select>
-      <OverViewCard
-        :allyOverView="getOverviewByRoleAndAlly(roleSelected, true)"
-        :enemyOverView="getOverviewByRoleAndAlly(roleSelected, false)"
-      ></OverViewCard>
     </v-window-item>
   </v-window>
 </template>
@@ -154,6 +155,7 @@ export default defineComponent({
   },
   data() {
     return {
+      canOverview: false,
       kdaKey: 0,
       statSelected: GameStatDisplay.KDA,
       statAvailable: Object.values(GameStatDisplay),
@@ -222,9 +224,11 @@ export default defineComponent({
       this.createWinrateGraphRadar();
       this.createGraphRadarKda();
       this.fillOverViewTeamElo();
-
-      console.log("lstOverview =>");
-      console.log(this.overviewLst);
+      this.canOverview = true;
+      console.log("radarChartData =>");
+      console.log(this.radarChartData);
+      console.log("radarChartOption =>");
+      console.log(this.radarChartOption);
     }
   },
 
@@ -881,7 +885,7 @@ export default defineComponent({
         scales: {
           r: {
             ticks: {
-              display: false,
+              count: 0,
             },
             beginAtZero: true,
           },
