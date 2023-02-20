@@ -105,7 +105,7 @@ export default defineComponent({
     launchGameAnalyse() {
       if (this.gameSelected && this.gameSelected.id) {
         this.isLoading = true;
-        /*apiService
+        apiService
           .getParticipantByGame(
             this.gameSelected,
             Queue.RANKED_SOLO,
@@ -155,11 +155,11 @@ export default defineComponent({
                 type: MessageType.ERROR,
               });
             }
-          });*/
-        let lstParticipant: Participant[] = apiService.getParticipantByPass();
+          });
+        /*let lstParticipant: Participant[] = apiService.getParticipantByPass();
         this.isLoading = false;
         this.$store.commit("SET_PARTICIPANT", lstParticipant);
-        this.$router.push({ name: "DisplayStats" });
+        this.$router.push({ name: "DisplayStats" });*/
       }
     },
     returnLogin() {
