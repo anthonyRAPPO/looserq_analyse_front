@@ -1,5 +1,4 @@
 <template>
-  <Loading v-if="isLoading"></Loading>
   <v-btn
     class="btnBackGames"
     icon
@@ -131,7 +130,6 @@ import { Game } from "@/interfaces/game";
 import { OverView } from "@/interfaces/overview";
 import { defineComponent } from "vue";
 import { Participant } from "@/interfaces/participant";
-import Loading from "@/components/Loading.vue";
 import HorizontalBarChart from "@/components/HorizontalBarChart.vue";
 import RadarChart from "@/components/RadarChart.vue";
 import OverViewCard from "@/components/OverViewCard.vue";
@@ -148,7 +146,6 @@ import { useMeta } from "vue-meta";
 
 export default defineComponent({
   components: {
-    Loading,
     HorizontalBarChart,
     RadarChart,
     OverViewCard,
@@ -162,7 +159,6 @@ export default defineComponent({
       roleAvailable: Object.values({ ...Role, ...RoleSelectable }),
       roleSelected: Role.TOP as Role | RoleSelectable,
       tab: "one",
-      isLoading: false,
       login: "",
       lstGames: [] as Game[],
       lstParticipant: [] as Participant[],
@@ -211,7 +207,7 @@ export default defineComponent({
       this.login.length === 0 ||
       this.lstGames.length === 0 ||
       this.lstParticipant.length === 0 ||
-      this.lstParticipant.length > 10
+      this.lstParticipant.length !== 10
     ) {
       this.$router.push({ name: "SearchLogin" });
     } else {

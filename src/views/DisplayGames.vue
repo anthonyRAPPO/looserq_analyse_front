@@ -1,5 +1,5 @@
 <template>
-  <Loading v-if="isLoading"></Loading>
+  <Loading v-if="isLoading" :value="progress"></Loading>
   <div class="containerTextSelection">
     <h2 class="textSelection">Select the game you want to analyse</h2>
   </div>
@@ -50,6 +50,8 @@ import { Participant } from "@/interfaces/participant";
 import Loading from "@/components/Loading.vue";
 import eventBus from "@/plugins/eventBus";
 import { MessageType } from "@/enumerations/messageType";
+import { AxiosResponse } from "axios";
+
 import { useMeta } from "vue-meta";
 import { tSMethodSignature } from "@babel/types";
 
@@ -65,6 +67,8 @@ export default defineComponent({
       gameSelected: {} as Game | undefined,
       isLoading: false,
       platformSelected: {} as Platform,
+      error: false,
+      progress: 0,
     };
   },
 
@@ -102,64 +106,80 @@ export default defineComponent({
         this.gameSelected = event.game;
       }
     },
+    async fillParticipantForOneGame(
+      participant: Participant,
+      lstParticipant: Participant[]
+    ) {
+      if (this.error === false) {
+        try {
+          const res: AxiosResponse = await apiService.fillParticipantByGame(
+            this.gameSelected!,
+            Queue.RANKED_SOLO,
+            this.platformSelected,
+            10,
+            participant.id
+          );
+          lstParticipant.push(res.data);
+          this.progress = lstParticipant.length * 10;
+        } catch (error: any) {
+          this.error = true;
+          this.isLoading = false;
+          if (error && error.response && error.response.status) {
+            switch (error.response.status) {
+              case 400: {
+                eventBus.emit("ouvrir-popup", {
+                  text: "Invalid parameters sent  ",
+                  type: MessageType.ERROR,
+                });
+                break;
+              }
+              case 429: {
+                eventBus.emit("ouvrir-popup", {
+                  text: "Too much request sent to RIOT API, please try later",
+                  type: MessageType.INFO,
+                });
+                break;
+              }
+              case 500: {
+                eventBus.emit("ouvrir-popup", {
+                  text: "Error requesting RIOT API",
+                  type: MessageType.INFO,
+                });
+                break;
+              }
+            }
+          } else {
+            eventBus.emit("ouvrir-popup", {
+              text: "Error during request",
+              type: MessageType.ERROR,
+            });
+          }
+          this.returnLogin();
+        }
+      }
+    },
+
+    async fillAllParticipantForOneGame(): Promise<Participant[]> {
+      let lstParticipant: Participant[] = [];
+      for (const participant of this.gameSelected!.lstParticipants) {
+        await this.fillParticipantForOneGame(participant, lstParticipant);
+      }
+      return lstParticipant;
+    },
     launchGameAnalyse() {
       if (this.gameSelected && this.gameSelected.id) {
         this.isLoading = true;
-        /*apiService
-          .getParticipantByGame(
-            this.gameSelected,
-            Queue.RANKED_SOLO,
-            this.platformSelected,
-            10
-          )
-          .then((res) => {
-            let lstParticipant: Participant[] = res.data;
-            console.log("lstParticipant");
-            lstParticipant;
-            this.isLoading = false;
-            this.$store.commit("SET_PARTICIPANT", lstParticipant);
-            this.$router.push({ name: "DisplayStats" });
-          })
-          .catch((error) => {
-            console.log("2");
-            console.log(error);
 
-            this.isLoading = false;
-            if (error && error.response && error.response.status) {
-              switch (error.response.status) {
-                case 400: {
-                  eventBus.emit("ouvrir-popup", {
-                    text: "Invalid parameters sent  ",
-                    type: MessageType.ERROR,
-                  });
-                  break;
-                }
-                case 429: {
-                  eventBus.emit("ouvrir-popup", {
-                    text: "Too much request sent to RIOT API, please try later",
-                    type: MessageType.INFO,
-                  });
-                  break;
-                }
-                case 500: {
-                  eventBus.emit("ouvrir-popup", {
-                    text: "Error requesting RIOT API",
-                    type: MessageType.INFO,
-                  });
-                  break;
-                }
-              }
-            } else {
-              eventBus.emit("ouvrir-popup", {
-                text: "Error during request",
-                type: MessageType.ERROR,
-              });
-            }
-          });*/
-        let lstParticipant: Participant[] = apiService.getParticipantByPass();
+        this.fillAllParticipantForOneGame().then((lstParticipant) => {
+          this.isLoading = false;
+          this.$store.commit("SET_PARTICIPANT", lstParticipant);
+          this.$router.push({ name: "DisplayStats" });
+        });
+
+        /*let lstParticipant: Participant[] = apiService.getParticipantByPass();
         this.isLoading = false;
         this.$store.commit("SET_PARTICIPANT", lstParticipant);
-        this.$router.push({ name: "DisplayStats" });
+        this.$router.push({ name: "DisplayStats" });*/
       }
     },
     returnLogin() {

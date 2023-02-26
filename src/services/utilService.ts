@@ -5,11 +5,11 @@ export function convertDateToEpochSecond(date: Date): number {
 }
 
 export function getSrcImgByGame(game: Game): string {
-  return `http://ddragon.leagueoflegends.com/cdn/13.1.1/img/champion/${game.championPlayed}.png`;
+  return `https://ddragon.leagueoflegends.com/cdn/13.1.1/img/champion/${game.championPlayed}.png`;
 }
 
 export function getSrcImgByName(championPlayed: string): string {
-  return `http://ddragon.leagueoflegends.com/cdn/13.1.1/img/champion/${championPlayed}.png`;
+  return `https://ddragon.leagueoflegends.com/cdn/13.1.1/img/champion/${championPlayed}.png`;
 }
 
 export function getStringDateFromNumber(dateStamp: number): string {

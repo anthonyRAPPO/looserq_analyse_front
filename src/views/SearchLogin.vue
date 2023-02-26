@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Loading v-if="isLoading"></Loading>
+    <Loading v-if="isLoading" :value="-1"></Loading>
     <v-row align="center" class="welwomeText">
       <v-col cols="12" class="looserQIntro">
         <h1>Welcome to LooserQAnalyse!</h1>
