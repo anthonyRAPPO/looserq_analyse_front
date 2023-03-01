@@ -9,7 +9,7 @@
   >
     <v-icon>mdi-arrow-left</v-icon>
   </v-btn>
-  <h2 class="tittle">So...Are you in looser Q?</h2>
+  <h2 class="tittle">So...Are you in losers Queue?</h2>
   <v-tabs v-model="tab" class="tabStat" show-arrows="mobile">
     <v-tab value="one">Overview</v-tab>
     <v-tab value="two">Last games</v-tab>
@@ -142,7 +142,6 @@ import { Tier } from "@/enumerations/Tier";
 import { Rank } from "@/enumerations/Rank";
 
 import { GameStatDisplay } from "@/enumerations/gameStatDisplay";
-import { useMeta } from "vue-meta";
 
 export default defineComponent({
   components: {

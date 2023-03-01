@@ -3,7 +3,7 @@
     <Loading v-if="isLoading" :value="-1"></Loading>
     <v-row align="center" class="welwomeText">
       <v-col cols="12" class="looserQIntro">
-        <h1>Welcome to LooserQAnalyse!</h1>
+        <h1>Welcome to Losers Queue Inspector !</h1>
       </v-col>
       <v-col cols="12">
         <v-img
@@ -15,7 +15,7 @@
       </v-col>
       <v-col cols="12">
         <h2 class="textIntro">
-          Analyse your last games to see if you are in looser Q
+          Analyse your last LOL games to see if you are in Losers Queue
         </h2>
       </v-col>
     </v-row>

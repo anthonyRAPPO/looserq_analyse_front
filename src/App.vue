@@ -18,7 +18,7 @@
     </div>
     <v-footer color="background" width="auto">
       <div class="footer">
-        <span>2023 - LooserQAnalyse - looserq.analyse@gmail.com</span>
+        <span>2023 - Losers Queue Inspector - looserq.analyse@gmail.com</span>
       </div></v-footer
     >
   </v-app>
@@ -26,35 +26,9 @@
 
 <script lang="ts">
 import SnackBar from "@/components/SnackBar.vue";
-import { useMeta } from "vue-meta";
 export default {
   components: {
     SnackBar,
-  },
-  setup() {
-    useMeta({
-      title: "Does the looser Q exist ? Analyse your last LOL games",
-      description:
-        "Is there a looser and winner queue in LOL? Analyse your last league of legend games and make your own opinion",
-      og: {
-        title: "Does the looser Q exist ? Analyse your last LOL games",
-        site_name: "Looser Q Analyse",
-        type: "website",
-        url: "http://localhost:8080/",
-        description:
-          "Is there a looser and winner queue in LOL? Analyse your last league of legend games and make your own opinion",
-        image: "http://localhost:8080/img/logoMonkey3.9b957464.png",
-      },
-      twitter: {
-        content: "summary",
-        site: "http://localhost:8080/",
-        title: "Does the looser Q exist ? Analyse your last LOL games",
-        description:
-          "Is there a looser and winner queue in LOL? Analyse your last league of legend games and make your own opinion",
-        image: "http://localhost:8080/img/logoMonkey3.9b957464.png",
-      },
-      htmlAttrs: { lang: "en", amp: true },
-    });
   },
 };
 </script>

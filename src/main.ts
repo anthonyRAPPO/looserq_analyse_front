@@ -2,7 +2,6 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import { createMetaManager } from "vue-meta";
 // Vuetify
 import "vuetify/styles";
 import { createVuetify } from "vuetify";
@@ -47,5 +46,5 @@ const vuetify = createVuetify({
 const app = createApp(App);
 const eventBus = mitt();
 app.provide("eventBus", eventBus);
-app.use(store).use(router).use(vuetify).use(createMetaManager());
+app.use(store).use(router).use(vuetify);
 app.mount("#app");
