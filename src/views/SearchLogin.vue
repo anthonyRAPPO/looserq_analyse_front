@@ -49,6 +49,50 @@
         Search
       </v-btn>
     </v-row>
+    <div class="loserQQuestion">
+      <h2>What is losers Queue ?</h2>
+    </div>
+    <v-row class="loserQDef">
+      <v-col cols="1"
+        ><v-icon icon="mdi-format-quote-open" class="quoteOpen"></v-icon
+      ></v-col>
+      <v-col cols="10"
+        ><h4>
+          In League of Legends (LoL), the term "loser queue" refers to a
+          hypothetical matchmaking system in which players who have lost
+          multiple games in a row are intentionally matched with other losing
+          players in an attempt to keep them from winning.<br />
+          It is important to note that there is no actual evidence that such a
+          system exists in LoL.
+        </h4></v-col
+      >
+      <v-col cols="1"
+        ><v-icon icon="mdi-format-quote-close" class="quoteClose"></v-icon
+      ></v-col>
+    </v-row>
+    <h3 class="byCGPT">- by ChatGPT</h3>
+    <div class="loserQQuestion">
+      <h2>What is Losers Queue Inspector ?</h2>
+    </div>
+
+    <v-row class="loserQDef">
+      <v-col cols="1"
+        ><v-icon icon="mdi-format-quote-open" class="quoteOpen"></v-icon
+      ></v-col>
+      <v-col cols="10"
+        ><h4>
+          Losers Queue Inspector is a website designed to analyze your latest
+          ranked games in League of Legends (LoL). The aim is to compare role by
+          role the players in the game and draw your own conclusions.<br />
+          You will have access to the rank, winrate of the season, winrate over
+          the last 10 games and average kda over the last 10 games.
+        </h4></v-col
+      >
+      <v-col cols="1"
+        ><v-icon icon="mdi-format-quote-close" class="quoteClose"></v-icon
+      ></v-col>
+    </v-row>
+    <h3 class="byCGPT">- by Me</h3>
   </div>
 </template>
 
@@ -165,6 +209,32 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.loserQQuestion {
+  margin-top: 5em;
+  color: rgb(var(--v-theme-secondary));
+}
+
+.loserQDef {
+  margin-top: 1em;
+}
+
+.byCGPT {
+  color: rgb(var(--v-theme-secondary));
+  margin-top: 1em;
+  font-weight: bold;
+}
+
+.loserQDef h4 {
+  text-align: start;
+}
+.loserQDef br {
+  margin-bottom: 0.5em;
+}
+
+.loserQDef i {
+  font-size: 2em;
+}
+
 .welwomeText {
   margin-top: 2em;
 }
@@ -172,6 +242,10 @@ export default defineComponent({
   margin-right: auto;
   margin-left: auto;
   width: 15em;
+}
+
+.arrow {
+  margin-top: 1em;
 }
 
 .textIntro {
@@ -185,6 +259,10 @@ export default defineComponent({
   }
   #logo {
     width: 12em;
+  }
+
+  .quoteClose {
+    right: 25px;
   }
 
   .textIntro {
