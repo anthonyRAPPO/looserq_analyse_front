@@ -29,4 +29,8 @@ export interface Participant {
   visionScore: number;
   totalcs: number;
   longestTimeLiving: number;
+  totalKill: number;
+  totalDeath: number;
+  totalAssist: number;
+  totalKda: number;
 }

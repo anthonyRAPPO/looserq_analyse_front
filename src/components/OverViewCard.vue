@@ -23,44 +23,6 @@
       </v-col>
     </v-row>
     <v-row class="titleStat">
-      <v-col cols="12"> Last 10 games winrate </v-col>
-    </v-row>
-    <v-row class="statBar">
-      <v-col md="2" sm="3"
-        ><span
-          :class="
-            getClassSpan(
-              true,
-              allyOverView.winrateLastGame,
-              enemyOverView.winrateLastGame
-            )
-          "
-          >{{ allyOverView.winrateLastGame.toFixed(2) }}%</span
-        ></v-col
-      >
-      <v-col md="8" sm="6">
-        <v-progress-linear
-          :model-value="getRatioLastGames()"
-          height="25"
-          class="progress"
-          rounded
-        >
-        </v-progress-linear>
-      </v-col>
-      <v-col md="2" sm="3"
-        ><span
-          :class="
-            getClassSpan(
-              false,
-              allyOverView.winrateLastGame,
-              enemyOverView.winrateLastGame
-            )
-          "
-          >{{ enemyOverView.winrateLastGame.toFixed(2) }}%</span
-        ></v-col
-      >
-    </v-row>
-    <v-row class="titleStat">
       <v-col cols="12"> Rank this season </v-col>
     </v-row>
     <v-row class="statBar">
@@ -136,6 +98,82 @@
         ></v-col
       >
     </v-row>
+    <v-row class="titleStat">
+      <v-col cols="12"> Last 10 games winrate </v-col>
+    </v-row>
+    <v-row class="statBar">
+      <v-col md="2" sm="3"
+        ><span
+          :class="
+            getClassSpan(
+              true,
+              allyOverView.winrateLastGame,
+              enemyOverView.winrateLastGame
+            )
+          "
+          >{{ allyOverView.winrateLastGame.toFixed(2) }}%</span
+        ></v-col
+      >
+      <v-col md="8" sm="6">
+        <v-progress-linear
+          :model-value="getRatioLastGames()"
+          height="25"
+          class="progress"
+          rounded
+        >
+        </v-progress-linear>
+      </v-col>
+      <v-col md="2" sm="3"
+        ><span
+          :class="
+            getClassSpan(
+              false,
+              allyOverView.winrateLastGame,
+              enemyOverView.winrateLastGame
+            )
+          "
+          >{{ enemyOverView.winrateLastGame.toFixed(2) }}%</span
+        ></v-col
+      >
+    </v-row>
+    <v-row class="titleStat">
+      <v-col cols="12"> Last 10 games kda </v-col>
+    </v-row>
+    <v-row class="statBar">
+      <v-col md="2" sm="3"
+        ><span
+          :class="
+            getClassSpan(
+              true,
+              allyOverView.kdaLastGames,
+              enemyOverView.kdaLastGames
+            )
+          "
+          >{{ allyOverView.kdaLastGames.toFixed(2) }}</span
+        ></v-col
+      >
+      <v-col md="8" sm="6">
+        <v-progress-linear
+          :model-value="getRatioKdaLastGames()"
+          height="25"
+          class="progress"
+          rounded
+        >
+        </v-progress-linear>
+      </v-col>
+      <v-col md="2" sm="3"
+        ><span
+          :class="
+            getClassSpan(
+              false,
+              allyOverView.kdaLastGames,
+              enemyOverView.kdaLastGames
+            )
+          "
+          >{{ enemyOverView.kdaLastGames.toFixed(2) }}</span
+        ></v-col
+      >
+    </v-row>
   </v-card>
 </template>
 
@@ -208,6 +246,12 @@ export default defineComponent({
         (Math.pow(this.allyOverView.seasoninrate, 2.5) * 100) /
         (Math.pow(this.allyOverView.seasoninrate, 2.5) +
           Math.pow(this.enemyOverView.seasoninrate, 2.5))
+      );
+    },
+    getRatioKdaLastGames() {
+      return (
+        (this.allyOverView.kdaLastGames * 100) /
+        (this.allyOverView.kdaLastGames + this.enemyOverView.kdaLastGames)
       );
     },
   },

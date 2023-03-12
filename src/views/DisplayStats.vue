@@ -12,10 +12,11 @@
   <h2 class="tittle">So...Are you in losers Queue?</h2>
   <v-tabs v-model="tab" class="tabStat" show-arrows="mobile">
     <v-tab value="one">Overview</v-tab>
-    <v-tab value="two">Last games</v-tab>
-    <v-tab value="three">Rank</v-tab>
-    <v-tab value="four">Season winrate</v-tab>
-    <v-tab value="five">Your game</v-tab>
+    <v-tab value="two">Rank</v-tab>
+    <v-tab value="three">Season winrate</v-tab>
+    <v-tab value="four">Last games winrate</v-tab>
+    <v-tab value="five">Last games kda</v-tab>
+    <v-tab value="six">Your game</v-tab>
   </v-tabs>
   <v-window v-model="tab">
     <v-window-item value="one">
@@ -33,29 +34,6 @@
       ></OverViewCard>
     </v-window-item>
     <v-window-item value="two">
-      <h3 class="sub-tittle">
-        Winrate (%) per team over the last 10 games of each player :
-      </h3>
-      <HorizontalBarChart
-        :barCharData="barChartData"
-        :barCharOption="barCharOption"
-        v-if="
-          barChartData &&
-          barChartData.datasets &&
-          barChartData.datasets.length > 0
-        "
-      ></HorizontalBarChart>
-      <RadarChart
-        :radarChartData="radarChartData"
-        :radarCharOption="radarChartOption"
-        v-if="
-          radarChartData &&
-          radarChartData.datasets &&
-          radarChartData.datasets.length > 0
-        "
-      ></RadarChart>
-    </v-window-item>
-    <v-window-item value="three">
       <h3 class="sub-tittle">Rank (actual season) per team of each player :</h3>
       <HorizontalBarChart
         :barCharData="rankbarChartData"
@@ -76,7 +54,7 @@
         "
       ></RadarChart>
     </v-window-item>
-    <v-window-item value="four">
+    <v-window-item value="three">
       <h3 class="sub-tittle">
         Winrate (actual season) per team of each player :
       </h3>
@@ -99,7 +77,54 @@
         "
       ></RadarChart>
     </v-window-item>
+    <v-window-item value="four">
+      <h3 class="sub-tittle">
+        Winrate (%) per team over the last 10 games of each player :
+      </h3>
+      <HorizontalBarChart
+        :barCharData="barChartData"
+        :barCharOption="barCharOption"
+        v-if="
+          barChartData &&
+          barChartData.datasets &&
+          barChartData.datasets.length > 0
+        "
+      ></HorizontalBarChart>
+      <RadarChart
+        :radarChartData="radarChartData"
+        :radarCharOption="radarChartOption"
+        v-if="
+          radarChartData &&
+          radarChartData.datasets &&
+          radarChartData.datasets.length > 0
+        "
+      ></RadarChart>
+    </v-window-item>
     <v-window-item value="five">
+      <h3 class="sub-tittle">
+        kda per team over the last 10 games of each player :
+      </h3>
+      <HorizontalBarChart
+        :barCharData="kdabarChartData"
+        :barCharOption="kdabarCharOption"
+        v-if="
+          kdabarChartData &&
+          kdabarChartData.datasets &&
+          kdabarChartData.datasets.length > 0
+        "
+      ></HorizontalBarChart>
+      <RadarChart
+        :radarChartData="lastKdaradarChartData"
+        :radarCharOption="lastKdaradarChartOption"
+        v-if="
+          lastKdaradarChartData &&
+          lastKdaradarChartData.datasets &&
+          lastKdaradarChartData.datasets.length > 0
+        "
+      ></RadarChart>
+    </v-window-item>
+
+    <v-window-item value="six">
       <v-select
         label="Select the statistic you want to display"
         :items="statAvailable"
@@ -166,6 +191,11 @@ export default defineComponent({
         (number | [number, number] | null)[],
         unknown
       >,
+      kdabarChartData: {} as ChartData<
+        "bar",
+        (number | [number, number] | null)[],
+        unknown
+      >,
       rankbarChartData: {} as ChartData<
         "bar",
         (number | [number, number] | null)[],
@@ -178,9 +208,16 @@ export default defineComponent({
       >,
       winratebarCharOption: {} as ChartOptions<"bar">,
       barCharOption: {} as ChartOptions<"bar">,
+      kdabarCharOption: {} as ChartOptions<"bar">,
       rankbarCharOption: {} as ChartOptions<"bar">,
       radarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
+      lastKdaradarChartData: {} as ChartData<
+        "radar",
+        (number | null)[],
+        unknown
+      >,
       radarChartOption: {} as ChartOptions<"radar">,
+      lastKdaradarChartOption: {} as ChartOptions<"radar">,
       rankRadarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
       rankRadarChartOption: {} as ChartOptions<"radar">,
       kdaRadarChartData: {} as ChartData<"radar", (number | null)[], unknown>,
@@ -219,6 +256,8 @@ export default defineComponent({
       this.createWinrateGraphRadar();
       this.createGraphRadarKda();
       this.fillOverViewTeamElo();
+      this.createGraphBarKda();
+      this.createLastGamesKdaGraphRadar();
       this.canOverview = true;
       console.log("radarChartData =>");
       console.log(this.radarChartData);
@@ -244,6 +283,7 @@ export default defineComponent({
     fillOverViewTeamEloByAlly(isAlly: boolean) {
       const o = this.getOverViewByRoleAndAlly(RoleSelectable.ALL, isAlly);
       let totalElo = 0;
+      let totalkda = 0;
       let nbr = 0;
       this.lstParticipant
         .filter(
@@ -256,10 +296,13 @@ export default defineComponent({
         )
         .forEach((p) => {
           totalElo = totalElo + p.calculatedElo;
+          totalkda = totalkda + p.totalKda;
           nbr++;
         });
 
       totalElo = totalElo / nbr;
+      totalkda = totalkda / nbr;
+      o.kdaLastGames = totalkda;
       o.calculatedElo = totalElo;
       const quo: number = Math.floor(totalElo / 400);
       const rest: number = totalElo % 400;
@@ -315,6 +358,7 @@ export default defineComponent({
         seasoninrate: 0,
         championPlayed: "",
         valid: true,
+        kdaLastGames: 0,
       });
       this.overviewLst.push({
         role: RoleSelectable.ALL,
@@ -325,6 +369,7 @@ export default defineComponent({
         seasoninrate: 0,
         championPlayed: "",
         valid: true,
+        kdaLastGames: 0,
       });
     },
     createOverview(isAlly: boolean, role: Role) {
@@ -345,6 +390,7 @@ export default defineComponent({
             seasoninrate: 0,
             championPlayed: p.championPlayed,
             valid: true,
+            kdaLastGames: p.totalKda,
           });
         } else {
           this.overviewLst.push({
@@ -356,6 +402,7 @@ export default defineComponent({
             seasoninrate: 0,
             championPlayed: p.championPlayed,
             valid: false,
+            kdaLastGames: 0,
           });
         }
       } else {
@@ -368,6 +415,7 @@ export default defineComponent({
           seasoninrate: 0,
           championPlayed: "",
           valid: false,
+          kdaLastGames: 0,
         });
       }
     },
@@ -925,6 +973,62 @@ export default defineComponent({
         ],
       };
     },
+
+    createLastGamesKdaGraphRadar() {
+      this.lastKdaradarChartOption = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            ticks: {
+              count: 0,
+            },
+            beginAtZero: true,
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+      };
+      const lastKdaAllyByPostion = this.getLastKdaByPositionByTeam(true);
+      const lastKdaEnemyByPostion = this.getLastKdaByPositionByTeam(false);
+
+      this.lastKdaradarChartData = {
+        labels: Object.keys(Role),
+        datasets: [
+          {
+            label: "ally",
+            fill: true,
+            borderColor: this.$vuetify.theme.themes.light.colors.warn,
+            data: lastKdaAllyByPostion,
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: this.$vuetify.theme.themes.light.colors.warn,
+          },
+          {
+            label: "enemy",
+            borderColor: this.$vuetify.theme.themes.light.colors.error,
+            fill: true,
+            data: lastKdaEnemyByPostion,
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor:
+              this.$vuetify.theme.themes.light.colors.error,
+          },
+        ],
+      };
+    },
+
+    getLastKdaByPositionByTeam(isAlly: boolean): number[] {
+      let res: number[] = [];
+      Object.values(Role).forEach((r) => {
+        res.push(this.getOverViewByRoleAndAlly(r, isAlly).kdaLastGames);
+      });
+      return res;
+    },
+
     getEloByRoleAlly(role: string, ally: boolean): number {
       const p = this.getParticipantByRoleAndAlly(role, ally);
       if (p) {
@@ -1146,6 +1250,58 @@ export default defineComponent({
           {
             label: "Enemy",
             data: [this.calculateWinrateByTeam(false, false)],
+            backgroundColor: this.$vuetify.theme.themes.light.colors.error,
+          },
+        ],
+      };
+    },
+
+    createGraphBarKda() {
+      this.kdabarCharOption = {
+        indexAxis: "y",
+        elements: {
+          bar: {
+            borderWidth: 2,
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            grid: {
+              display: false,
+            },
+          },
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+        },
+      };
+
+      this.kdabarChartData = {
+        labels: [""],
+        datasets: [
+          {
+            label: "Ally",
+            data: [
+              this.getOverviewByRoleAndAlly(RoleSelectable.ALL, true)
+                .kdaLastGames,
+            ],
+            backgroundColor: this.$vuetify.theme.themes.light.colors.warn,
+          },
+          {
+            label: "Enemy",
+            data: [
+              this.getOverviewByRoleAndAlly(RoleSelectable.ALL, false)
+                .kdaLastGames,
+            ],
             backgroundColor: this.$vuetify.theme.themes.light.colors.error,
           },
         ],

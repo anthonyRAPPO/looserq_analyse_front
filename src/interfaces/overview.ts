@@ -10,4 +10,5 @@ export interface OverView {
   seasoninrate: number;
   championPlayed: string;
   valid: boolean;
+  kdaLastGames: number;
 }
