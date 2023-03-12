@@ -402,7 +402,7 @@ export default defineComponent({
             seasoninrate: 0,
             championPlayed: p.championPlayed,
             valid: false,
-            kdaLastGames: 0,
+            kdaLastGames: p.totalKda,
           });
         }
       } else {
